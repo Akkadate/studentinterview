@@ -11,32 +11,83 @@ async function seedQuestions() {
     // Clear existing data
     await db.query("DELETE FROM question");
 
-    // Reset sequence if needed
-    // await db.query('ALTER SEQUENCE question_id_seq RESTART WITH 1');
-
     // Path to the CSV file
     const csvPath = path.join(__dirname, "../../data/question.csv");
+
+    console.log(`Reading CSV file from: ${csvPath}`);
+
+    // Check if file exists
+    if (!fs.existsSync(csvPath)) {
+      throw new Error(`File not found: ${csvPath}`);
+    }
 
     // Create a promise to track when all rows are processed
     return new Promise((resolve, reject) => {
       const results = [];
 
       fs.createReadStream(csvPath)
-        .pipe(csv())
+        .pipe(
+          csv({
+            trim: true, // ตัดช่องว่างออก
+            skipLines: 0, // ไม่ข้ามบรรทัดไหน
+            headers: true, // บรรทัดแรกเป็นหัวคอลัมน์
+          })
+        )
         .on("data", (data) => {
-          results.push(data);
+          // Debug: Log column names from first row
+          if (results.length === 0) {
+            console.log("CSV columns:", Object.keys(data));
+          }
+
+          // Debug: Log parsed row
+          console.log(
+            `Read row: question_id=${data["ข้อ"]}, question_text=${data[
+              "คำถาม"
+            ]?.substring(0, 30)}...`
+          );
+
+          // Validate row data
+          if (data["ข้อ"] && data["คำถาม"] && data["รูปปบบคำถาม"]) {
+            results.push(data);
+          } else {
+            console.warn("Invalid row, missing required fields:", data);
+          }
         })
         .on("end", async () => {
           try {
+            console.log(`Read ${results.length} valid rows from CSV`);
+
+            // No valid data found
+            if (results.length === 0) {
+              reject(new Error("No valid data found in CSV file"));
+              return;
+            }
+
             // Insert each question
             for (const row of results) {
+              // Convert to proper integer if it's a string
+              const questionId = parseInt(row["ข้อ"], 10);
+
+              if (isNaN(questionId)) {
+                console.warn(
+                  `Invalid question_id: ${row["ข้อ"]}, skipping row`
+                );
+                continue;
+              }
+
+              console.log(
+                `Inserting question: ${questionId}, ${row["คำถาม"]?.substring(
+                  0,
+                  30
+                )}...`
+              );
+
               await db.query(
                 `INSERT INTO question 
                   (question_id, question_text, question_type, answer_options, condition_logic, condition_display) 
-                 VALUES 
-                  ($1, $2, $3, $4, $5, $6)`,
+                VALUES ($1, $2, $3, $4, $5, $6)`,
                 [
-                  row["ข้อ"],
+                  questionId,
                   row["คำถาม"],
                   row["รูปปบบคำถาม"],
                   row["ตัวเลือกคำตอบ"],
