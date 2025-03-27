@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useInterview } from '@/hooks/useInterview';
-import { interviewerService } from '@/services/interviewerService';
+import { useInterview } from '../hooks/useInterview';
+import { interviewerService } from '../services/interviewerService';
 
 export default function InterviewerSelect() {
   const { setInterviewer, showNotification } = useInterview();
