@@ -2,7 +2,7 @@
 // frontend/src/components/Notification.jsx
 'use client';
 
-import { useInterview } from '@/hooks/useInterview';
+import { useInterview } from '../hooks/useInterview';
 
 export default function Notification() {
   const { notification } = useInterview();

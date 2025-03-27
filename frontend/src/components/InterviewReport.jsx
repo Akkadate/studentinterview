@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { studentService } from '@/services/studentService';
+import { studentService } from '../services/studentService';
 
 export default function InterviewReport() {
   const [summary, setSummary] = useState([]);

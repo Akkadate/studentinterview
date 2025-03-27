@@ -1,7 +1,7 @@
 // frontend/src/components/StudentInfo.jsx
 'use client';
 
-import { useInterview } from '@/hooks/useInterview';
+import { useInterview } from '../hooks/useInterview';
 
 export default function StudentInfo() {
   const { student } = useInterview();

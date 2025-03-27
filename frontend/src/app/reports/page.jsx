@@ -3,9 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { studentService } from '@/services/studentService';
-import InterviewReport from '@/components/InterviewReport';
-import ExportButton from '@/components/ExportButton';
+import { studentService } from '../../services/studentService';
+import InterviewReport from '../../components/InterviewReport';
+import ExportButton from '../../components/ExportButton';
 
 export default function ReportsPage() {
   const [notInterviewed, setNotInterviewed] = useState([]);

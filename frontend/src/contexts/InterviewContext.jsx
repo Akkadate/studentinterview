@@ -2,7 +2,7 @@
 'use client';
 
 import { createContext, useState, useEffect } from 'react';
-import { questionService } from '@/services/questionService';
+import { questionService } from '../services/questionService';
 
 // สร้าง Context สำหรับข้อมูลการสัมภาษณ์
 export const InterviewContext = createContext();

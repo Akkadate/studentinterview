@@ -4,8 +4,8 @@
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { InterviewProvider } from '@/contexts/InterviewContext.jsx';
-import Notification from '@/components/Notification';
+import { InterviewProvider } from '../contexts/InterviewContext.jsx';
+import Notification from '../components/Notification';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });

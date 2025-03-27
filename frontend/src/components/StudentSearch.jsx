@@ -2,8 +2,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useInterview } from '@/hooks/useInterview';
-import { studentService } from '@/services/studentService';
+import { useInterview } from '../hooks/useInterview';
+import { studentService } from '../services/studentService';
 
 export default function StudentSearch() {
   const { setStudent, showNotification } = useInterview();

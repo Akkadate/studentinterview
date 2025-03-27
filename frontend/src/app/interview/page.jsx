@@ -2,10 +2,10 @@
 'use client';
 
 import { useInterview } from '../../hooks/useInterview';
-import InterviewerSelect from '@/components/InterviewerSelect';
-import StudentSearch from '@/components/StudentSearch';
-import StudentInfo from '@/components/StudentInfo';
-import QuestionForm from '@/components/QuestionForm';
+import InterviewerSelect from '../../components/InterviewerSelect';
+import StudentSearch from '../../components/StudentSearch';
+import StudentInfo from '../../components/StudentInfo';
+import QuestionForm from '../../components/QuestionForm';
 
 export default function InterviewPage() {
   const { interviewer, student } = useInterview();

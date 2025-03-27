@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useInterview } from '@/hooks/useInterview';
+import { useInterview } from '../hooks/useInterview';
 
 export default function ExportButton() {
   const { downloadExcelReport } = useInterview();
