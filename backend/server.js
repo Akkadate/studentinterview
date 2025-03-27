@@ -11,7 +11,7 @@ const questionRoutes = require('./routes/questionRoutes');
 const interviewRoutes = require('./routes/interviewRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5003;
 
 // Middleware
 app.use(cors({

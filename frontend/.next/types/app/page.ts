@@ -1,4 +1,4 @@
-// File: E:\Coding\myProject\studentinterview\frontend\src\app\page.jsx
+// File: /var/www/app/studentinterview/frontend/src/app/page.jsx
 import * as entry from '../../../src/app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
