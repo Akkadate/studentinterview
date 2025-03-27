@@ -1,5 +1,6 @@
 // frontend/src/services/api.js
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5003/api";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://interview.devapp.cc:5003/api";
 
 /**
  * พื้นฐานบริการเรียก API
