@@ -10,6 +10,7 @@ async function seedQuestions() {
 
     // Clear existing data
     await db.query("DELETE FROM question");
+    console.log("Cleared existing question data");
 
     // Path to the CSV file
     const csvPath = path.join(__dirname, "../../data/question.csv");
@@ -24,38 +25,56 @@ async function seedQuestions() {
     // Create a promise to track when all rows are processed
     return new Promise((resolve, reject) => {
       const results = [];
+      let rowCount = 0;
+      let isFirstRow = true; // Flag to identify header row
 
       fs.createReadStream(csvPath)
         .pipe(
           csv({
-            trim: true, // ตัดช่องว่างออก
-            skipLines: 0, // ไม่ข้ามบรรทัดไหน
-            headers: true, // บรรทัดแรกเป็นหัวคอลัมน์
+            trim: true,
+            skipLines: 0,
+            headers: false, // Don't use the first row as headers
           })
         )
         .on("data", (data) => {
-          // Debug: Log column names from first row
-          if (results.length === 0) {
-            console.log("CSV columns:", Object.keys(data));
+          rowCount++;
+          
+          // Map column indices to Thai column names
+          // This approach works whether headers are recognized or not
+          const mappedData = {
+            "ข้อ": data._0,
+            "คำถาม": data._1,
+            "รูปปบบคำถาม": data._2,
+            "ตัวเลือกคำตอบ": data._3,
+            "เงื่อนไขเชื่อมโยง": data._4,
+            "แสดงคำถามเพิ่มตามเงื่อนไข": data._5
+          };
+          
+          console.log(`Processing row ${rowCount}:`, mappedData);
+
+          // Skip the header row
+          if (isFirstRow) {
+            isFirstRow = false;
+            console.log("Skipping header row");
+            return; // Skip processing this row
           }
 
-          // Debug: Log parsed row
-          console.log(
-            `Read row: question_id=${data["ข้อ"]}, question_text=${data[
-              "คำถาม"
-            ]?.substring(0, 30)}...`
-          );
-
           // Validate row data
-          if (data["ข้อ"] && data["คำถาม"] && data["รูปปบบคำถาม"]) {
-            results.push(data);
+          if (mappedData["ข้อ"] && mappedData["คำถาม"] && mappedData["รูปปบบคำถาม"]) {
+            results.push(mappedData);
+            console.log(`Row ${rowCount} is valid`);
           } else {
-            console.warn("Invalid row, missing required fields:", data);
+            console.warn(`Row ${rowCount} is invalid, missing required fields:`, {
+              "ข้อ": !!mappedData["ข้อ"],
+              "คำถาม": !!mappedData["คำถาม"],
+              "รูปปบบคำถาม": !!mappedData["รูปปบบคำถาม"],
+            });
           }
         })
         .on("end", async () => {
           try {
-            console.log(`Read ${results.length} valid rows from CSV`);
+            console.log(`Total rows in CSV: ${rowCount}`);
+            console.log(`Valid rows for insert: ${results.length}`);
 
             // No valid data found
             if (results.length === 0) {
@@ -82,19 +101,34 @@ async function seedQuestions() {
                 )}...`
               );
 
-              await db.query(
-                `INSERT INTO question 
-                  (question_id, question_text, question_type, answer_options, condition_logic, condition_display) 
-                VALUES ($1, $2, $3, $4, $5, $6)`,
-                [
-                  questionId,
-                  row["คำถาม"],
-                  row["รูปปบบคำถาม"],
-                  row["ตัวเลือกคำตอบ"],
-                  row["เงื่อนไขเชื่อมโยง"],
-                  row["แสดงคำถามเพิ่มตามเงื่อนไข"],
-                ]
-              );
+              try {
+                // Start a transaction
+                await db.query('BEGIN');
+
+                // Insert with more detailed error logging
+                await db.query(
+                  `INSERT INTO question 
+                    (question_id, question_text, question_type, answer_options, condition_logic, condition_display) 
+                  VALUES ($1, $2, $3, $4, $5, $6)`,
+                  [
+                    questionId,
+                    row["คำถาม"],
+                    row["รูปปบบคำถาม"],
+                    row["ตัวเลือกคำตอบ"] || null,
+                    row["เงื่อนไขเชื่อมโยง"] || null,
+                    row["แสดงคำถามเพิ่มตามเงื่อนไข"] || null,
+                  ]
+                );
+
+                // Commit the transaction
+                await db.query('COMMIT');
+                console.log(`Inserted question ID ${questionId} successfully`);
+              } catch (insertError) {
+                // Rollback on error
+                await db.query('ROLLBACK');
+                console.error(`Error inserting question ID ${questionId}:`, insertError);
+                throw insertError;
+              }
             }
 
             console.log(`Seeded ${results.length} questions successfully`);
