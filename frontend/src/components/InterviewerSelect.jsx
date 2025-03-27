@@ -2,35 +2,63 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useInterview } from '../hooks/useInterview';
-import { interviewerService } from '../services/interviewerService';
+import { useInterview } from '@/hooks/useInterview';
+import { interviewerService } from '@/services/interviewerService';
 
 export default function InterviewerSelect() {
   const { setInterviewer, showNotification } = useInterview();
   const [interviewers, setInterviewers] = useState([]);
   const [interviewerId, setInterviewerId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   
   // โหลดข้อมูลผู้สัมภาษณ์
   useEffect(() => {
+    let isMounted = true; // ป้องกันการอัปเดตหลัง unmount
+    
     const loadInterviewers = async () => {
+      if (loading) return; // ป้องกันการเรียกซ้ำ
+      
       try {
         setLoading(true);
+        console.log('กำลังโหลดข้อมูลผู้สัมภาษณ์...');
+        
         const response = await interviewerService.getAllInterviewers();
+        
+        // ตรวจสอบว่าคอมโพเนนต์ยัง mount อยู่หรือไม่
+        if (!isMounted) return;
+        
         if (response.success) {
           setInterviewers(response.data);
         } else {
           showNotification('ไม่สามารถโหลดข้อมูลผู้สัมภาษณ์ได้', 'error');
         }
       } catch (error) {
-        showNotification('เกิดข้อผิดพลาด: ' + error.message, 'error');
+        // ตรวจสอบว่าคอมโพเนนต์ยัง mount อยู่หรือไม่
+        if (!isMounted) return;
+        
+        console.error('Error loading interviewers:', error);
+        showNotification('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message, 'error');
       } finally {
-        setLoading(false);
+        // ตรวจสอบว่าคอมโพเนนต์ยัง mount อยู่หรือไม่
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
     
     loadInterviewers();
-  }, [showNotification]);
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, [retryCount]); // ใช้ retryCount เท่านั้นเป็น dependency
+  
+  // ฟังก์ชันสำหรับลองโหลดข้อมูลใหม่
+  const handleRetry = () => {
+    setRetryCount(prevCount => prevCount + 1);
+  };
   
   // ค้นหาผู้สัมภาษณ์
   const handleInterviewerSelect = async () => {
@@ -41,17 +69,54 @@ export default function InterviewerSelect() {
     
     try {
       setLoading(true);
+      
+      // ค้นหาในข้อมูลที่โหลดมาแล้ว
+      const found = interviewers.find(
+        interviewer => interviewer.staff_id.toString() === interviewerId.toString()
+      );
+      
+      if (found) {
+        setInterviewer(found);
+        showNotification(`เลือกผู้สัมภาษณ์ ${found.staff_name} เรียบร้อยแล้ว`, 'success');
+        return;
+      }
+      
+      // ถ้าไม่พบในข้อมูลที่โหลดมาแล้ว ให้ค้นหาจาก API
       const response = await interviewerService.getInterviewerById(interviewerId);
+      
       if (response.success) {
         setInterviewer(response.data);
         showNotification(`เลือกผู้สัมภาษณ์ ${response.data.staff_name} เรียบร้อยแล้ว`, 'success');
+        
+        // เพิ่มผู้สัมภาษณ์ที่พบเข้าไปในรายการ
+        if (!interviewers.some(i => i.staff_id === response.data.staff_id)) {
+          setInterviewers(prev => [...prev, response.data]);
+        }
       } else {
         showNotification('ไม่พบข้อมูลผู้สัมภาษณ์', 'error');
       }
     } catch (error) {
-      showNotification('เกิดข้อผิดพลาด: ' + error.message, 'error');
+      console.error('Error selecting interviewer:', error);
+      showNotification('เกิดข้อผิดพลาดในการค้นหาผู้สัมภาษณ์: ' + error.message, 'error');
     } finally {
       setLoading(false);
+    }
+  };
+  
+  // เลือกผู้สัมภาษณ์จาก dropdown
+  const handleSelectChange = (e) => {
+    const selectedId = e.target.value;
+    setInterviewerId(selectedId);
+    
+    if (selectedId) {
+      const found = interviewers.find(
+        interviewer => interviewer.staff_id.toString() === selectedId.toString()
+      );
+      
+      if (found) {
+        setInterviewer(found);
+        showNotification(`เลือกผู้สัมภาษณ์ ${found.staff_name} เรียบร้อยแล้ว`, 'success');
+      }
     }
   };
   
@@ -93,7 +158,7 @@ export default function InterviewerSelect() {
           <select
             id="interviewer-select"
             value={interviewerId}
-            onChange={(e) => setInterviewerId(e.target.value)}
+            onChange={handleSelectChange}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">-- เลือกผู้สัมภาษณ์ --</option>
@@ -103,6 +168,27 @@ export default function InterviewerSelect() {
               </option>
             ))}
           </select>
+        </div>
+      )}
+      
+      {/* แสดงปุ่มลองใหม่เมื่อไม่มีรายการผู้สัมภาษณ์ */}
+      {interviewers.length === 0 && !loading && (
+        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-red-600 mb-2">ไม่สามารถโหลดข้อมูลผู้สัมภาษณ์ได้</p>
+          <button
+            onClick={handleRetry}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            ลองใหม่
+          </button>
+        </div>
+      )}
+      
+      {/* แสดงข้อความโหลดข้อมูล */}
+      {loading && (
+        <div className="mt-4 text-center text-gray-500">
+          <div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500 mr-2"></div>
+          กำลังโหลดข้อมูล...
         </div>
       )}
     </div>
