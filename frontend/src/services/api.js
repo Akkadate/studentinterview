@@ -1,6 +1,8 @@
 // frontend/src/services/api.js
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://interview.devapp.cc:5003/api";
+
+// ใช้ API Proxy ภายในเว็บแอพตัวเองแทนการเรียก backend โดยตรง
+// ไม่ต้องระบุ protocol และ domain เพราะเรียกใน origin เดียวกัน
+const API_URL = "/api";
 
 /**
  * พื้นฐานบริการเรียก API
@@ -13,7 +15,10 @@ export const api = {
    */
   async get(endpoint) {
     try {
-      const response = await fetch(`${API_URL}/${endpoint}`);
+      const fullUrl = `${API_URL}/${endpoint}`;
+      console.log(`Making GET request to proxy: ${fullUrl}`);
+
+      const response = await fetch(fullUrl);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -35,7 +40,10 @@ export const api = {
    */
   async post(endpoint, data) {
     try {
-      const response = await fetch(`${API_URL}/${endpoint}`, {
+      const fullUrl = `${API_URL}/${endpoint}`;
+      console.log(`Making POST request to proxy: ${fullUrl}`);
+
+      const response = await fetch(fullUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,7 +71,10 @@ export const api = {
    */
   async put(endpoint, data) {
     try {
-      const response = await fetch(`${API_URL}/${endpoint}`, {
+      const fullUrl = `${API_URL}/${endpoint}`;
+      console.log(`Making PUT request to proxy: ${fullUrl}`);
+
+      const response = await fetch(fullUrl, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -90,7 +101,10 @@ export const api = {
    */
   async delete(endpoint) {
     try {
-      const response = await fetch(`${API_URL}/${endpoint}`, {
+      const fullUrl = `${API_URL}/${endpoint}`;
+      console.log(`Making DELETE request to proxy: ${fullUrl}`);
+
+      const response = await fetch(fullUrl, {
         method: "DELETE",
       });
 
@@ -113,7 +127,10 @@ export const api = {
    */
   async downloadFile(endpoint) {
     try {
-      const response = await fetch(`${API_URL}/${endpoint}`);
+      const fullUrl = `${API_URL}/${endpoint}`;
+      console.log(`Making download request to proxy: ${fullUrl}`);
+
+      const response = await fetch(fullUrl);
 
       if (!response.ok) {
         const errorText = await response.text();
