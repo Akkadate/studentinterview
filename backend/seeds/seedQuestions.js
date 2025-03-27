@@ -26,47 +26,48 @@ async function seedQuestions() {
     return new Promise((resolve, reject) => {
       const results = [];
       let rowCount = 0;
+      let isFirstRow = true; // Flag to identify header row
 
       fs.createReadStream(csvPath)
         .pipe(
           csv({
             trim: true,
             skipLines: 0,
-            headers: true,
+            headers: false, // Don't use the first row as headers
           })
         )
         .on("data", (data) => {
           rowCount++;
-          console.log(`Processing row ${rowCount}:`, data);
+          
+          // Map column indices to Thai column names
+          // This approach works whether headers are recognized or not
+          const mappedData = {
+            "ข้อ": data._0,
+            "คำถาม": data._1,
+            "รูปปบบคำถาม": data._2,
+            "ตัวเลือกคำตอบ": data._3,
+            "เงื่อนไขเชื่อมโยง": data._4,
+            "แสดงคำถามเพิ่มตามเงื่อนไข": data._5
+          };
+          
+          console.log(`Processing row ${rowCount}:`, mappedData);
 
-          // Debug: Log column names from first row
-          if (results.length === 0) {
-            console.log("CSV columns:", Object.keys(data));
+          // Skip the header row
+          if (isFirstRow) {
+            isFirstRow = false;
+            console.log("Skipping header row");
+            return; // Skip processing this row
           }
 
-          // Check for Thai column names
-          // Try both "รูปปบบคำถาม" and "รูปแบบคำถาม" to handle potential typo
-          const questionType = data["รูปปบบคำถาม"] || data["รูปแบบคำถาม"];
-
-          // Debug: Log parsed row with more details
-          console.log(`Row details:
-            - ข้อ: ${data["ข้อ"]}
-            - คำถาม: ${data["คำถาม"]?.substring(0, 30)}...
-            - รูปแบบคำถาม: ${questionType}
-          `);
-
-          // Validate row data with improved checking
-          if (data["ข้อ"] && data["คำถาม"] && questionType) {
-            results.push({
-              ...data,
-              "รูปปบบคำถาม": questionType, // Ensure we use the found value
-            });
+          // Validate row data
+          if (mappedData["ข้อ"] && mappedData["คำถาม"] && mappedData["รูปปบบคำถาม"]) {
+            results.push(mappedData);
             console.log(`Row ${rowCount} is valid`);
           } else {
             console.warn(`Row ${rowCount} is invalid, missing required fields:`, {
-              "ข้อ": !!data["ข้อ"],
-              "คำถาม": !!data["คำถาม"],
-              "รูปปบบคำถาม/รูปแบบคำถาม": !!questionType,
+              "ข้อ": !!mappedData["ข้อ"],
+              "คำถาม": !!mappedData["คำถาม"],
+              "รูปปบบคำถาม": !!mappedData["รูปปบบคำถาม"],
             });
           }
         })
@@ -93,9 +94,6 @@ async function seedQuestions() {
                 continue;
               }
 
-              // Get question type (handle potential typo)
-              const questionType = row["รูปปบบคำถาม"] || row["รูปแบบคำถาม"];
-
               console.log(
                 `Inserting question: ${questionId}, ${row["คำถาม"]?.substring(
                   0,
@@ -115,10 +113,10 @@ async function seedQuestions() {
                   [
                     questionId,
                     row["คำถาม"],
-                    questionType,
-                    row["ตัวเลือกคำตอบ"],
-                    row["เงื่อนไขเชื่อมโยง"],
-                    row["แสดงคำถามเพิ่มตามเงื่อนไข"],
+                    row["รูปปบบคำถาม"],
+                    row["ตัวเลือกคำตอบ"] || null,
+                    row["เงื่อนไขเชื่อมโยง"] || null,
+                    row["แสดงคำถามเพิ่มตามเงื่อนไข"] || null,
                   ]
                 );
 
