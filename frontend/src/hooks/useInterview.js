@@ -2,7 +2,7 @@
 "use client";
 
 import { useContext } from "react";
-import { InterviewContext } from "@/contexts/InterviewContext";
+import { InterviewContext } from "@/contexts/InterviewContext.jsx";
 import { interviewService } from "@/services/interviewService";
 
 export const useInterview = () => {
