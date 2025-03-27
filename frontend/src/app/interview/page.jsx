@@ -1,7 +1,7 @@
 // frontend/src/app/interview/page.jsx
 'use client';
 
-import { useInterview } from '@/hooks/useInterview';
+import { useInterview } from '../../hooks/useInterview';
 import InterviewerSelect from '@/components/InterviewerSelect';
 import StudentSearch from '@/components/StudentSearch';
 import StudentInfo from '@/components/StudentInfo';
