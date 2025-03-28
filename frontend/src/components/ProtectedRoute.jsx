@@ -16,6 +16,9 @@ export default function ProtectedRoute({ children }) {
     }
   }, [isLoggedIn, loading, router]);
 
+  // เพิ่ม console.log เพื่อตรวจสอบ
+console.log("ProtectedRoute - loading:", loading, "isLoggedIn:", isLoggedIn);
+
   // ถ้ากำลังโหลดสถานะการล็อกอิน ให้แสดง loading
   if (loading) {
     return (

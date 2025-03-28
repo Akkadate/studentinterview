@@ -14,30 +14,37 @@ export const AuthProvider = ({ children }) => {
   const router = useRouter();
 
   // โหลดข้อมูลผู้ใช้จาก localStorage เมื่อเริ่มต้น
-  useEffect(() => {
-    const checkLoginStatus = () => {
-      try {
-        const storedUser = localStorage.getItem("user");
-        const storedLoginStatus = localStorage.getItem("isLoggedIn");
+  // frontend/src/contexts/AuthContext.jsx
+// โค้ดใน useEffect
+useEffect(() => {
+  const checkLoginStatus = () => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      const storedLoginStatus = localStorage.getItem("isLoggedIn");
+      
+      console.log("Auth check - stored status:", storedLoginStatus, "user data exists:", !!storedUser);
 
-        if (storedLoginStatus === "true" && storedUser) {
-          setUser(JSON.parse(storedUser));
-          setIsLoggedIn(true);
-        }
-      } catch (error) {
-        console.error("Error restoring auth state:", error);
-      } finally {
-        setLoading(false);
+      if (storedLoginStatus === "true" && storedUser) {
+        setUser(JSON.parse(storedUser));
+        setIsLoggedIn(true);
+        console.log("User is logged in");
+      } else {
+        console.log("User is NOT logged in");
       }
-    };
-
-    // เรียกตรวจสอบเฉพาะฝั่ง client
-    if (typeof window !== "undefined") {
-      checkLoginStatus();
-    } else {
+    } catch (error) {
+      console.error("Error restoring auth state:", error);
+    } finally {
       setLoading(false);
     }
-  }, []);
+  };
+
+  // เรียกตรวจสอบเฉพาะฝั่ง client
+  if (typeof window !== "undefined") {
+    checkLoginStatus();
+  } else {
+    setLoading(false);
+  }
+}, []);
 
   // ฟังก์ชันล็อกอิน
   const login = async (staffId) => {

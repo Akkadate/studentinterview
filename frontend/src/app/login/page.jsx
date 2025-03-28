@@ -49,6 +49,9 @@ export default function LoginPage() {
         localStorage.setItem("user", JSON.stringify(data.data));
         localStorage.setItem("isLoggedIn", "true");
 
+        // เพิ่มการตรวจสอบ
+      console.log("ไปที่ Navigating to interview page...");
+
         // นำทางไปยังหน้าหลัก
         router.push("/interview");
       } else {
