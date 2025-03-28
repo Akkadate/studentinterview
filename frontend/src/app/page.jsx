@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 export default function Home() {
+  /*
   useEffect(() => {
     // ฟังก์ชันทดสอบ API
     const testApiConnection = async () => {
@@ -28,6 +29,9 @@ export default function Home() {
         console.error("API Connection Test Error:", error);
       }
     };
+
+    // เรียกฟังก์ชันทดสอบ
+    testApiConnection();
 
     const testBackendConnectivity = async () => {
       try {
@@ -56,8 +60,11 @@ export default function Home() {
         console.error("Backend connectivity test error:", error);
       }
     };
-  }, []);
 
+    // เรียกฟังก์ชันทดสอบการเชื่อมต่อ
+    testBackendConnectivity();
+  }, []);
+*/
   // โค้ดเดิมของคอมโพเนนต์...
   return (
     <div className="px-4 sm:px-0">
