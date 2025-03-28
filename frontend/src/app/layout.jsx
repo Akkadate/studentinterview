@@ -1,7 +1,7 @@
 // frontend/src/app/layout.jsx
 "use client";
 
-import { Inter } from "next/font/google";
+import { Prompt, Inter } from "next/font/google";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { InterviewProvider } from "../contexts/InterviewContext.jsx";
