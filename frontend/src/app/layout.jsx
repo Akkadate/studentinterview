@@ -1,25 +1,39 @@
 // frontend/src/app/layout.jsx
-'use client';
+"use client";
 
-import { Inter } from 'next/font/google';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { InterviewProvider } from '../contexts/InterviewContext.jsx';
-import Notification from '../components/Notification';
-import './globals.css';
+import { Inter } from "next/font/google";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { InterviewProvider } from "../contexts/InterviewContext.jsx";
+import Notification from "../components/Notification";
+import "./globals.css";
 
-const inter = Inter({ subsets: ['latin'] });
+// กำหนดค่าฟอนต์ Prompt สำหรับภาษาไทย
+const prompt = Prompt({
+  weight: ["300", "400", "500", "700"],
+  subsets: ["thai", "latin"],
+  display: "swap",
+  variable: "--font-prompt",
+});
+
+const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
-  
+
   return (
     <html lang="th">
       <head>
         <title>ระบบสัมภาษณ์นักศึกษา</title>
-        <meta name="description" content="ระบบสัมภาษณ์นักศึกษาสำหรับเก็บข้อมูลในการดูแล" />
+        <meta
+          name="description"
+          content="ระบบสัมภาษณ์นักศึกษาสำหรับเก็บข้อมูลในการดูแล"
+        />
       </head>
-      <body className={inter.className}>
+      <body
+        className={`${prompt.className} ${inter.className}`}
+        suppressHydrationWarning
+      >
         <InterviewProvider>
           <div className="min-h-screen bg-gray-100">
             {/* Header */}
@@ -28,15 +42,17 @@ export default function RootLayout({ children }) {
                 <div className="flex justify-between h-16">
                   <div className="flex">
                     <div className="flex-shrink-0 flex items-center">
-                      <h1 className="text-xl font-bold text-blue-600">ระบบสัมภาษณ์นักศึกษา</h1>
+                      <h1 className="text-xl font-bold text-blue-600">
+                        ระบบสัมภาษณ์นักศึกษา
+                      </h1>
                     </div>
                     <nav className="ml-6 flex space-x-8">
                       <Link
                         href="/"
                         className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                          pathname === '/' 
-                            ? 'border-blue-500 text-gray-900' 
-                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                          pathname === "/"
+                            ? "border-blue-500 text-gray-900"
+                            : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                         }`}
                       >
                         หน้าแรก
@@ -44,9 +60,9 @@ export default function RootLayout({ children }) {
                       <Link
                         href="/interview"
                         className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                          pathname === '/interview' 
-                            ? 'border-blue-500 text-gray-900' 
-                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                          pathname === "/interview"
+                            ? "border-blue-500 text-gray-900"
+                            : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                         }`}
                       >
                         สัมภาษณ์
@@ -54,9 +70,9 @@ export default function RootLayout({ children }) {
                       <Link
                         href="/reports"
                         className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                          pathname === '/reports' 
-                            ? 'border-blue-500 text-gray-900' 
-                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                          pathname === "/reports"
+                            ? "border-blue-500 text-gray-900"
+                            : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                         }`}
                       >
                         รายงาน
@@ -71,7 +87,7 @@ export default function RootLayout({ children }) {
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
               {children}
             </main>
-            
+
             {/* Footer */}
             <footer className="bg-white shadow-inner py-4 mt-8">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -80,7 +96,7 @@ export default function RootLayout({ children }) {
                 </div>
               </div>
             </footer>
-            
+
             {/* Notification component */}
             <Notification />
           </div>
@@ -89,10 +105,3 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
-
-
-
-
-
-
-
