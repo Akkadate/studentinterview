@@ -20,26 +20,28 @@ export const api = {
 
       // ดึงข้อมูลผู้ใช้จาก localStorage
       let userInfo = null;
-      if (typeof window !== "undefined") {
-        const user = localStorage.getItem("user");
-        if (user) {
-          try {
-            userInfo = JSON.parse(user);
-            console.log("User info from localStorage:", userInfo); // เพิ่ม log เพื่อตรวจสอบข้อมูล
-          } catch (e) {
-            console.error("Error parsing user data:", e);
+      const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+      if (isLoggedIn) {
+        try {
+          const storedUser = localStorage.getItem("user");
+          if (storedUser) {
+            userInfo = JSON.parse(storedUser);
+            console.log("User info from localStorage:", userInfo);
+          } else {
+            console.warn("User marked as logged in but no user data found");
           }
-        } else {
-          console.warn("No user data found in localStorage");
+        } catch (e) {
+          console.error("Error parsing user data:", e);
         }
+      } else {
+        console.log("Not logged in");
       }
 
-      // สร้าง headers ที่จำเป็น
       const headers = {
         "Content-Type": "application/json",
       };
 
-      // เพิ่ม headers เฉพาะเมื่อมีข้อมูลผู้ใช้
       if (userInfo && userInfo.staff_faculty) {
         headers["X-User-Faculty"] = userInfo.staff_faculty;
       }
@@ -47,7 +49,7 @@ export const api = {
         headers["X-User-ID"] = userInfo.staff_id;
       }
 
-      console.log("Request headers:", headers); // เพิ่ม log เพื่อตรวจสอบ headers
+      console.log("Request headers:", headers);
 
       const response = await fetch(fullUrl, {
         method: "GET",

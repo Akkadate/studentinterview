@@ -32,21 +32,26 @@ export default function LoginPage() {
         body: JSON.stringify({ staff_id: staffId }),
       });
 
+      // ตรวจสอบว่าเป็น JSON response หรือไม่
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error("Non-JSON response from login API");
+        setError("เกิดข้อผิดพลาดในการตอบกลับจากเซิร์ฟเวอร์");
+        return;
+      }
+
       const data = await response.json();
 
       if (response.ok && data.success) {
         // บันทึกข้อมูลผู้ใช้ลงใน localStorage
+        console.log("Login successful, user data:", data.data);
         localStorage.setItem("user", JSON.stringify(data.data));
         localStorage.setItem("isLoggedIn", "true");
 
         // นำทางไปยังหน้าหลัก
         router.push("/interview");
       } else {
-        // แสดงข้อความที่เป็นมิตรกับผู้ใช้
-        setError(
-          data.message ||
-            "รหัสผู้สัมภาษณ์ไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง"
-        );
+        setError(data.message || "รหัสผู้สัมภาษณ์ไม่ถูกต้อง");
       }
     } catch (err) {
       console.error("Login error:", err);

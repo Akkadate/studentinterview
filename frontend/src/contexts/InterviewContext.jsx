@@ -36,58 +36,37 @@ export const InterviewProvider = ({ children }) => {
 
   // แก้ไขส่วน useEffect ที่โหลดคำถาม
   useEffect(() => {
+    // frontend/src/contexts/InterviewContext.jsx
     const loadQuestions = async () => {
+      // ตรวจสอบว่าได้ล็อกอินแล้วหรือไม่
+      const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+      if (!isLoggedIn) {
+        console.log("Not logged in, skipping question loading");
+        // อาจจะต้องกำหนดค่าเริ่มต้นบางอย่างที่นี่
+        return;
+      }
+
       try {
         setLoading(true);
-        console.log("กำลังโหลดข้อมูลคำถาม...");
         const response = await questionService.getAllQuestions();
 
-        if (response && response.success) {
+        if (response.success) {
           setQuestions(response.data);
-          // เริ่มต้นให้คำถามทั้งหมดแสดง
-          setVisibleQuestions(response.data);
-          console.log("โหลดคำถามสำเร็จ:", response.data.length, "คำถาม");
         } else {
           console.error("ไม่สามารถโหลดคำถามได้:", response);
-          showNotification("ไม่สามารถโหลดคำถามได้ โปรดรีเฟรชหน้าเว็บ", "error");
-          // ใช้คำถามตัวอย่างถ้าไม่สามารถโหลดได้
-          const sampleQuestions = [
-            {
-              question_id: 1,
-              question_text: "นักศึกษามีปัญหาด้านการเรียนหรือไม่?",
-              question_type: "radio",
-              answer_options: "มี,ไม่มี",
-            },
-            {
-              question_id: 2,
-              question_text: "นักศึกษามีปัญหาด้านการเงินหรือไม่?",
-              question_type: "radio",
-              answer_options: "มี,ไม่มี",
-            },
-          ];
-          setQuestions(sampleQuestions);
-          setVisibleQuestions(sampleQuestions);
+          // จัดการกับกรณีที่ไม่สามารถโหลดคำถามได้
+          if (
+            response.message === "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ"
+          ) {
+            // อาจจะต้องนำทางกลับไปยังหน้าล็อกอิน
+            if (typeof window !== "undefined") {
+              window.location.href = "/login";
+            }
+          }
         }
       } catch (error) {
-        console.error("Error loading questions:", error);
-        showNotification("ไม่สามารถโหลดคำถามได้: " + error.message, "error");
-        // ใช้คำถามตัวอย่างถ้าไม่สามารถโหลดได้
-        const sampleQuestions = [
-          {
-            question_id: 1,
-            question_text: "นักศึกษามีปัญหาด้านการเรียนหรือไม่?",
-            question_type: "radio",
-            answer_options: "มี,ไม่มี",
-          },
-          {
-            question_id: 2,
-            question_text: "นักศึกษามีปัญหาด้านการเงินหรือไม่?",
-            question_type: "radio",
-            answer_options: "มี,ไม่มี",
-          },
-        ];
-        setQuestions(sampleQuestions);
-        setVisibleQuestions(sampleQuestions);
+        console.error("ไม่สามารถโหลดคำถามได้:", error);
       } finally {
         setLoading(false);
       }
