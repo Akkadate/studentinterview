@@ -1,7 +1,9 @@
 // src/app/api/[...path]/route.js
-// API Proxy ที่เรียก backend HTTP จาก server แทน browser
+// แก้ไขการกำหนด BACKEND_API_URL ให้ชัดเจน (ระบุโปรโตคอลและพอร์ต)
+const BACKEND_API_URL = "http://interview.devapp.cc:5003";
 
-const BACKEND_API_URL = "http://interview.devapp.cc:5003"; // ตัด '/api' ออก
+// แสดงค่า URL ที่ใช้ (ใช้สำหรับการแก้ไขปัญหา)
+console.log("Backend API URL configured as:", BACKEND_API_URL);
 
 export async function GET(request, { params }) {
   try {
@@ -16,10 +18,25 @@ export async function GET(request, { params }) {
       },
     });
 
+    // แสดงข้อมูล Response เพื่อการแก้ไขปัญหา
+    console.log(`[API Proxy] Response status: ${response.status}`);
+    console.log(
+      `[API Proxy] Response headers:`,
+      Object.fromEntries(response.headers)
+    );
+
     // ตรวจสอบการตอบกลับที่ไม่ใช่ JSON (เช่น HTML)
     const contentType = response.headers.get("content-type");
     if (contentType && !contentType.includes("application/json")) {
       console.error(`Received non-JSON response: ${contentType}`);
+
+      // อ่าน response body เพื่อตรวจสอบเนื้อหา
+      const textResponse = await response.text();
+      console.error(
+        `[API Proxy] Response body (first 200 chars):`,
+        textResponse.substring(0, 200)
+      );
+
       return new Response(
         JSON.stringify({
           success: false,
@@ -81,7 +98,21 @@ export async function POST(request, { params }) {
       body: JSON.stringify(body),
     });
 
+    // แสดงข้อมูล Response เพื่อการแก้ไขปัญหา
+    console.log(`[API Proxy] Response status: ${response.status}`);
+    console.log(
+      `[API Proxy] Response headers:`,
+      Object.fromEntries(response.headers)
+    );
+
     if (!response.ok) {
+      // อ่าน response body เพื่อตรวจสอบเนื้อหา
+      const textResponse = await response.text();
+      console.error(
+        `[API Proxy] Response body (first 200 chars):`,
+        textResponse.substring(0, 200)
+      );
+
       return new Response(
         JSON.stringify({
           success: false,
@@ -129,6 +160,13 @@ export async function PUT(request, { params }) {
       body: JSON.stringify(body),
     });
 
+    // แสดงข้อมูล Response เพื่อการแก้ไขปัญหา
+    console.log(`[API Proxy] Response status: ${response.status}`);
+    console.log(
+      `[API Proxy] Response headers:`,
+      Object.fromEntries(response.headers)
+    );
+
     if (!response.ok) {
       return new Response(
         JSON.stringify({
@@ -149,6 +187,14 @@ export async function PUT(request, { params }) {
     });
   } catch (error) {
     console.error("API Proxy Error:", error);
+
+    // อ่าน response body เพื่อตรวจสอบเนื้อหา
+    const textResponse = await response.text();
+    console.error(
+      `[API Proxy] Response body (first 200 chars):`,
+      textResponse.substring(0, 200)
+    );
+
     return new Response(
       JSON.stringify({
         success: false,
@@ -174,6 +220,13 @@ export async function DELETE(request, { params }) {
       },
     });
 
+    // แสดงข้อมูล Response เพื่อการแก้ไขปัญหา
+    console.log(`[API Proxy] Response status: ${response.status}`);
+    console.log(
+      `[API Proxy] Response headers:`,
+      Object.fromEntries(response.headers)
+    );
+
     if (!response.ok) {
       return new Response(
         JSON.stringify({
@@ -194,6 +247,14 @@ export async function DELETE(request, { params }) {
     });
   } catch (error) {
     console.error("API Proxy Error:", error);
+
+    // อ่าน response body เพื่อตรวจสอบเนื้อหา
+    const textResponse = await response.text();
+    console.error(
+      `[API Proxy] Response body (first 200 chars):`,
+      textResponse.substring(0, 200)
+    );
+
     return new Response(
       JSON.stringify({
         success: false,

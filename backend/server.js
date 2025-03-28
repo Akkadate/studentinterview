@@ -16,15 +16,30 @@ const PORT = process.env.PORT || 5003;
 // Middleware
 app.use(
   cors({
-    origin: [
-      process.env.FRONTEND_URL,
-      "http://localhost:3003",
-      "http://interview.devapp.cc:3003",
-      "https://interview.devapp.cc:3003",
-    ],
+    // อนุญาต origin ทั้งหมดในโหมด development
+    origin:
+      process.env.NODE_ENV === "development"
+        ? "*"
+        : [
+            process.env.FRONTEND_URL,
+            "http://localhost:3003",
+            "http://interview.devapp.cc:3003",
+            "https://interview.devapp.cc:3003",
+            "https://interview.devapp.cc",
+            "http://interview.devapp.cc",
+          ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// เพิ่ม middleware แสดงข้อมูลการร้องขอสำหรับการแก้ไขปัญหา
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log("Request Headers:", req.headers);
+  next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -36,9 +51,18 @@ app.use("/api/students", studentRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/interviews", interviewRoutes);
 
-// Health check endpoint
+// ปรับปรุง endpoint health check ให้แสดงข้อมูลเพิ่มเติม
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok", message: "Server is running" });
+  res.status(200).json({
+    status: "ok",
+    message: "Server is running",
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV,
+    corsSettings: {
+      frontend_url: process.env.FRONTEND_URL,
+      port: process.env.PORT,
+    },
+  });
 });
 
 // Error handling middleware

@@ -31,6 +31,37 @@ export default function Home() {
 
     // เรียกฟังก์ชันทดสอบ
     testApiConnection();
+
+    const testBackendConnectivity = async () => {
+      try {
+        console.log("Testing backend connectivity...");
+        const response = await fetch("/api/check-backend");
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Backend Connectivity Results:", data);
+
+          // ตรวจสอบว่ามี backend ใดที่สามารถเชื่อมต่อได้
+          const anySuccessful = Object.values(data.results).some(
+            (result) => result.success
+          );
+          if (anySuccessful) {
+            console.log(
+              "✅ Successfully connected to at least one backend endpoint"
+            );
+          } else {
+            console.error("❌ Could not connect to any backend endpoint");
+          }
+        } else {
+          console.error("Backend connectivity test failed");
+        }
+      } catch (error) {
+        console.error("Backend connectivity test error:", error);
+      }
+    };
+
+    // เรียกฟังก์ชันทดสอบการเชื่อมต่อ
+    testBackendConnectivity();
   }, []);
 
   // โค้ดเดิมของคอมโพเนนต์...

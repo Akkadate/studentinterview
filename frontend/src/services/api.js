@@ -20,6 +20,24 @@ export const api = {
 
       const response = await fetch(fullUrl);
 
+      // แสดงข้อมูล response เพื่อการแก้ไขปัญหา
+      console.log(`[API Service] Response status: ${response.status}`);
+
+      // ตรวจสอบ Content-Type
+      const contentType = response.headers.get("content-type");
+      if (contentType && !contentType.includes("application/json")) {
+        console.error(`[API Service] Non-JSON response type: ${contentType}`);
+        // ดึงข้อมูล response เพื่อดูเนื้อหา
+        const text = await response.text();
+        console.error(
+          `[API Service] Response text (first 100 chars): ${text.substring(
+            0,
+            100
+          )}`
+        );
+        throw new Error(`Received non-JSON response: ${contentType}`);
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "มีข้อผิดพลาดเกิดขึ้น");
@@ -50,6 +68,24 @@ export const api = {
         },
         body: JSON.stringify(data),
       });
+
+      // แสดงข้อมูล response เพื่อการแก้ไขปัญหา
+      console.log(`[API Service] Response status: ${response.status}`);
+
+      // ตรวจสอบ Content-Type
+      const contentType = response.headers.get("content-type");
+      if (contentType && !contentType.includes("application/json")) {
+        console.error(`[API Service] Non-JSON response type: ${contentType}`);
+        // ดึงข้อมูล response เพื่อดูเนื้อหา
+        const text = await response.text();
+        console.error(
+          `[API Service] Response text (first 100 chars): ${text.substring(
+            0,
+            100
+          )}`
+        );
+        throw new Error(`Received non-JSON response: ${contentType}`);
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -82,6 +118,24 @@ export const api = {
         body: JSON.stringify(data),
       });
 
+      // แสดงข้อมูล response เพื่อการแก้ไขปัญหา
+      console.log(`[API Service] Response status: ${response.status}`);
+
+      // ตรวจสอบ Content-Type
+      const contentType = response.headers.get("content-type");
+      if (contentType && !contentType.includes("application/json")) {
+        console.error(`[API Service] Non-JSON response type: ${contentType}`);
+        // ดึงข้อมูล response เพื่อดูเนื้อหา
+        const text = await response.text();
+        console.error(
+          `[API Service] Response text (first 100 chars): ${text.substring(
+            0,
+            100
+          )}`
+        );
+        throw new Error(`Received non-JSON response: ${contentType}`);
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "มีข้อผิดพลาดเกิดขึ้น");
@@ -107,6 +161,24 @@ export const api = {
       const response = await fetch(fullUrl, {
         method: "DELETE",
       });
+
+      // แสดงข้อมูล response เพื่อการแก้ไขปัญหา
+      console.log(`[API Service] Response status: ${response.status}`);
+
+      // ตรวจสอบ Content-Type
+      const contentType = response.headers.get("content-type");
+      if (contentType && !contentType.includes("application/json")) {
+        console.error(`[API Service] Non-JSON response type: ${contentType}`);
+        // ดึงข้อมูล response เพื่อดูเนื้อหา
+        const text = await response.text();
+        console.error(
+          `[API Service] Response text (first 100 chars): ${text.substring(
+            0,
+            100
+          )}`
+        );
+        throw new Error(`Received non-JSON response: ${contentType}`);
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
