@@ -1,4 +1,3 @@
-// frontend/src/services/questionService.js
 import { api } from "./api";
 
 export const questionService = {
@@ -7,7 +6,17 @@ export const questionService = {
    * @returns {Promise} - ข้อมูลคำถาม
    */
   async getAllQuestions() {
-    return api.get("questions");
+    try {
+      return await api.get("questions");
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      // ส่งค่ากลับในรูปแบบที่คาดหวังแม้เกิดข้อผิดพลาด
+      return {
+        success: false,
+        message: error.message || "ไม่สามารถโหลดข้อมูลคำถามได้",
+        data: [],
+      };
+    }
   },
 
   /**
@@ -16,6 +25,16 @@ export const questionService = {
    * @returns {Promise} - ข้อมูลคำถาม
    */
   async getQuestionById(id) {
-    return api.get(`questions/${id}`);
+    try {
+      return await api.get(`questions/${id}`);
+    } catch (error) {
+      console.error(`Error fetching question ID ${id}:`, error);
+      // ส่งค่ากลับในรูปแบบที่คาดหวังแม้เกิดข้อผิดพลาด
+      return {
+        success: false,
+        message: error.message || "ไม่สามารถโหลดข้อมูลคำถามได้",
+        data: null,
+      };
+    }
   },
 };

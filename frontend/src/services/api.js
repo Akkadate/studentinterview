@@ -38,10 +38,7 @@ export const api = {
         "Content-Type": "application/json",
       };
 
-      if (userInfo && userInfo.staff_id) {
-        headers["X-User-ID"] = userInfo.staff_id;
-      }
-
+      // แก้ไขจากการใส่ X-User-ID ซ้ำกัน (bug ในโค้ดเดิม)
       if (userInfo && userInfo.staff_id) {
         headers["X-User-ID"] = userInfo.staff_id;
       }
@@ -53,10 +50,45 @@ export const api = {
         headers: headers,
       });
 
-      // โค้ดส่วนที่เหลือ...
+      // เพิ่มการจัดการกรณี response.ok เป็นเท็จ (HTTP status ไม่อยู่ในช่วง 200-299)
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          return {
+            success: false,
+            message: "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ",
+            data: [],
+          };
+        }
+
+        // พยายามอ่าน error message จาก response
+        try {
+          const errorData = await response.json();
+          return {
+            success: false,
+            message: errorData.message || `HTTP error: ${response.status}`,
+            data: [],
+          };
+        } catch (jsonError) {
+          // กรณีที่ไม่สามารถอ่าน response เป็น JSON ได้
+          return {
+            success: false,
+            message: `HTTP error: ${response.status}`,
+            data: [],
+          };
+        }
+      }
+
+      // กรณีที่ response.ok เป็นจริง
+      const data = await response.json();
+      return data; // ส่งค่าที่ได้จาก backend กลับไป
     } catch (error) {
       console.error(`GET Error (${endpoint}):`, error);
-      throw error;
+      // ส่งค่ากลับในรูปแบบเดียวกันกับกรณีที่สำเร็จ แทนที่จะ throw error
+      return {
+        success: false,
+        message: error.message || "เกิดข้อผิดพลาดในการเรียก API",
+        data: [],
+      };
     }
   },
 

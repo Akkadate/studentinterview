@@ -40,25 +40,30 @@ export const InterviewProvider = ({ children }) => {
     const loadQuestions = async () => {
       // ตรวจสอบว่าได้ล็อกอินแล้วหรือไม่
       const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-
+    
       if (!isLoggedIn) {
         console.log("Not logged in, skipping question loading");
         // อาจจะต้องกำหนดค่าเริ่มต้นบางอย่างที่นี่
         return;
       }
-
+    
       try {
         setLoading(true);
         const response = await questionService.getAllQuestions();
-
+        
+        // เพิ่มการตรวจสอบว่า response เป็น undefined หรือไม่
+        if (!response) {
+          console.error("ไม่สามารถโหลดคำถามได้: ไม่มีข้อมูลตอบกลับจาก API");
+          setLoading(false);
+          return;
+        }
+        
         if (response.success) {
           setQuestions(response.data);
         } else {
           console.error("ไม่สามารถโหลดคำถามได้:", response);
           // จัดการกับกรณีที่ไม่สามารถโหลดคำถามได้
-          if (
-            response.message === "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ"
-          ) {
+          if (response.message === "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ") {
             // อาจจะต้องนำทางกลับไปยังหน้าล็อกอิน
             if (typeof window !== "undefined") {
               window.location.href = "/login";
