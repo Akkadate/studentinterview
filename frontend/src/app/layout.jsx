@@ -5,7 +5,7 @@ import { Prompt, Inter } from "next/font/google";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { InterviewProvider } from "../contexts/InterviewContext.jsx";
-import { AuthProvider } from "../contexts/AuthContext.jsx"; // เพิ่ม AuthProvider
+import { AuthProvider, useAuth } from "../contexts/AuthContext.jsx"; // เพิ่ม useAuth ในการ import
 import Notification from "../components/Notification";
 import "./globals.css";
 
