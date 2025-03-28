@@ -2,70 +2,39 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Home() {
-  /*
+  const { isLoggedIn, loading } = useAuth();
+  const router = useRouter();
+
+  // เมื่อโหลดหน้าแรก ถ้ายังไม่ได้ล็อกอิน ให้ redirect ไปที่หน้าล็อกอิน
   useEffect(() => {
-    // ฟังก์ชันทดสอบ API
-    const testApiConnection = async () => {
-      try {
-        console.log("Testing API connection...");
+    if (!loading && !isLoggedIn) {
+      router.push("/login");
+    }
+  }, [isLoggedIn, loading, router]);
 
-        // ทดสอบเรียก API health check
-        const response = await fetch("/api/health");
+  // ถ้ากำลังตรวจสอบสถานะการล็อกอิน แสดงหน้า loading
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+          <p className="text-gray-600">กำลังตรวจสอบสถานะการเข้าสู่ระบบ...</p>
+        </div>
+      </div>
+    );
+  }
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log("API Health Check:", data);
-        } else {
-          console.error(
-            "API Health Check Failed:",
-            response.status,
-            response.statusText
-          );
-        }
-      } catch (error) {
-        console.error("API Connection Test Error:", error);
-      }
-    };
+  // ถ้าไม่ได้ล็อกอิน (และกำลังจะ redirect) ไม่ต้องแสดงอะไร
+  if (!isLoggedIn) {
+    return null;
+  }
 
-    // เรียกฟังก์ชันทดสอบ
-    testApiConnection();
-
-    const testBackendConnectivity = async () => {
-      try {
-        console.log("Testing backend connectivity...");
-        const response = await fetch("/api/check-backend");
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Backend Connectivity Results:", data);
-
-          // ตรวจสอบว่ามี backend ใดที่สามารถเชื่อมต่อได้
-          const anySuccessful = Object.values(data.results).some(
-            (result) => result.success
-          );
-          if (anySuccessful) {
-            console.log(
-              "✅ Successfully connected to at least one backend endpoint"
-            );
-          } else {
-            console.error("❌ Could not connect to any backend endpoint");
-          }
-        } else {
-          console.error("Backend connectivity test failed");
-        }
-      } catch (error) {
-        console.error("Backend connectivity test error:", error);
-      }
-    };
-
-    // เรียกฟังก์ชันทดสอบการเชื่อมต่อ
-    testBackendConnectivity();
-  }, []);
-*/
-  // โค้ดเดิมของคอมโพเนนต์...
+  // ถ้าล็อกอินแล้ว แสดงหน้าแรก
   return (
     <div className="px-4 sm:px-0">
       <div className="bg-white overflow-hidden shadow rounded-lg">
@@ -84,7 +53,7 @@ export default function Home() {
                   สัมภาษณ์นักศึกษา
                 </h2>
                 <p className="text-gray-600 mb-4">
-                  เริ่มการสัมภาษณ์นักศึกษาชั้นปีที่ 1 ทุกคณะและสาขาวิชา
+                  เริ่มการสัมภาษณ์นักศึกษาชั้นปีที่ 1 ตามคณะที่ท่านได้รับสิทธิ์
                 </p>
                 <Link
                   href="/interview"
@@ -129,7 +98,7 @@ export default function Home() {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <span>สัมภาษณ์นักศึกษาชั้นปีที่ 1 ทุกหลักสูตร ทุกคณะ</span>
+                  <span>สัมภาษณ์นักศึกษาชั้นปีที่ 1 ในคณะของท่าน</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -146,7 +115,7 @@ export default function Home() {
                     />
                   </svg>
                   <span>
-                    คำถามเกี่ยวกับข้อมูลส่วนบุคคลนักศึกษา
+                    บันทึกข้อมูลเกี่ยวกับข้อมูลส่วนบุคคลนักศึกษา
                     เพื่อเป็นข้อมูลในการช่วยเหลือดูแล
                   </span>
                 </li>
@@ -165,7 +134,7 @@ export default function Home() {
                     />
                   </svg>
                   <span>
-                    รายงานสถิติ จำนวนนักศึกษาที่ตอบแบบสอบถาม และยังไม่ตอบ
+                    ดูรายงานสถิติ จำนวนนักศึกษาที่ตอบแบบสอบถาม และยังไม่ตอบ
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -182,23 +151,7 @@ export default function Home() {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <span>ดูรายชื่อผู้ยังไม่ตอบแบบสัมภาษณ์ได้</span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span>ส่งออกข้อมูลการสัมภาษณ์ทั้งหมดเป็น Excel</span>
+                  <span>ส่งออกข้อมูลการสัมภาษณ์เป็น Excel</span>
                 </li>
               </ul>
             </div>

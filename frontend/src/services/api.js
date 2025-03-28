@@ -1,7 +1,6 @@
 // frontend/src/services/api.js
 
 // ใช้ API Proxy ภายในเว็บแอพตัวเองแทนการเรียก backend โดยตรง
-// ไม่ต้องระบุ protocol และ domain เพราะเรียกใน origin เดียวกัน
 const API_URL = "/api";
 
 /**
@@ -16,29 +15,36 @@ export const api = {
   async get(endpoint) {
     try {
       const fullUrl = `${API_URL}/${endpoint}`;
-      console.log(`Making GET request to proxy: ${fullUrl}`);
+      console.log(`Making GET request to: ${fullUrl}`);
 
-      const response = await fetch(fullUrl);
-
-      // แสดงข้อมูล response เพื่อการแก้ไขปัญหา
-      console.log(`[API Service] Response status: ${response.status}`);
-
-      // ตรวจสอบ Content-Type
-      const contentType = response.headers.get("content-type");
-      if (contentType && !contentType.includes("application/json")) {
-        console.error(`[API Service] Non-JSON response type: ${contentType}`);
-        // ดึงข้อมูล response เพื่อดูเนื้อหา
-        const text = await response.text();
-        console.error(
-          `[API Service] Response text (first 100 chars): ${text.substring(
-            0,
-            100
-          )}`
-        );
-        throw new Error(`Received non-JSON response: ${contentType}`);
+      // ดึงข้อมูลผู้ใช้จาก localStorage
+      let userInfo = {};
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("user");
+        if (user) {
+          userInfo = JSON.parse(user);
+        }
       }
 
+      const response = await fetch(fullUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          // ส่งข้อมูลคณะของผู้ใช้ใน header เพื่อใช้ในการกรองข้อมูล
+          "X-User-Faculty": userInfo.staff_faculty || "",
+          "X-User-ID": userInfo.staff_id || "",
+        },
+      });
+
       if (!response.ok) {
+        // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
+        if (response.status === 401 || response.status === 403) {
+          return {
+            success: false,
+            message: "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ",
+          };
+        }
+
         const errorData = await response.json();
         throw new Error(errorData.message || "มีข้อผิดพลาดเกิดขึ้น");
       }
@@ -59,35 +65,37 @@ export const api = {
   async post(endpoint, data) {
     try {
       const fullUrl = `${API_URL}/${endpoint}`;
-      console.log(`Making POST request to proxy: ${fullUrl}`);
+      console.log(`Making POST request to: ${fullUrl}`);
+
+      // ดึงข้อมูลผู้ใช้จาก localStorage
+      let userInfo = {};
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("user");
+        if (user) {
+          userInfo = JSON.parse(user);
+        }
+      }
 
       const response = await fetch(fullUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // ส่งข้อมูลคณะของผู้ใช้ใน header
+          "X-User-Faculty": userInfo.staff_faculty || "",
+          "X-User-ID": userInfo.staff_id || "",
         },
         body: JSON.stringify(data),
       });
 
-      // แสดงข้อมูล response เพื่อการแก้ไขปัญหา
-      console.log(`[API Service] Response status: ${response.status}`);
-
-      // ตรวจสอบ Content-Type
-      const contentType = response.headers.get("content-type");
-      if (contentType && !contentType.includes("application/json")) {
-        console.error(`[API Service] Non-JSON response type: ${contentType}`);
-        // ดึงข้อมูล response เพื่อดูเนื้อหา
-        const text = await response.text();
-        console.error(
-          `[API Service] Response text (first 100 chars): ${text.substring(
-            0,
-            100
-          )}`
-        );
-        throw new Error(`Received non-JSON response: ${contentType}`);
-      }
-
       if (!response.ok) {
+        // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
+        if (response.status === 401 || response.status === 403) {
+          return {
+            success: false,
+            message: "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ",
+          };
+        }
+
         const errorData = await response.json();
         throw new Error(errorData.message || "มีข้อผิดพลาดเกิดขึ้น");
       }
@@ -108,35 +116,37 @@ export const api = {
   async put(endpoint, data) {
     try {
       const fullUrl = `${API_URL}/${endpoint}`;
-      console.log(`Making PUT request to proxy: ${fullUrl}`);
+      console.log(`Making PUT request to: ${fullUrl}`);
+
+      // ดึงข้อมูลผู้ใช้จาก localStorage
+      let userInfo = {};
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("user");
+        if (user) {
+          userInfo = JSON.parse(user);
+        }
+      }
 
       const response = await fetch(fullUrl, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          // ส่งข้อมูลคณะของผู้ใช้ใน header
+          "X-User-Faculty": userInfo.staff_faculty || "",
+          "X-User-ID": userInfo.staff_id || "",
         },
         body: JSON.stringify(data),
       });
 
-      // แสดงข้อมูล response เพื่อการแก้ไขปัญหา
-      console.log(`[API Service] Response status: ${response.status}`);
-
-      // ตรวจสอบ Content-Type
-      const contentType = response.headers.get("content-type");
-      if (contentType && !contentType.includes("application/json")) {
-        console.error(`[API Service] Non-JSON response type: ${contentType}`);
-        // ดึงข้อมูล response เพื่อดูเนื้อหา
-        const text = await response.text();
-        console.error(
-          `[API Service] Response text (first 100 chars): ${text.substring(
-            0,
-            100
-          )}`
-        );
-        throw new Error(`Received non-JSON response: ${contentType}`);
-      }
-
       if (!response.ok) {
+        // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
+        if (response.status === 401 || response.status === 403) {
+          return {
+            success: false,
+            message: "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ",
+          };
+        }
+
         const errorData = await response.json();
         throw new Error(errorData.message || "มีข้อผิดพลาดเกิดขึ้น");
       }
@@ -156,31 +166,36 @@ export const api = {
   async delete(endpoint) {
     try {
       const fullUrl = `${API_URL}/${endpoint}`;
-      console.log(`Making DELETE request to proxy: ${fullUrl}`);
+      console.log(`Making DELETE request to: ${fullUrl}`);
+
+      // ดึงข้อมูลผู้ใช้จาก localStorage
+      let userInfo = {};
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("user");
+        if (user) {
+          userInfo = JSON.parse(user);
+        }
+      }
 
       const response = await fetch(fullUrl, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          // ส่งข้อมูลคณะของผู้ใช้ใน header
+          "X-User-Faculty": userInfo.staff_faculty || "",
+          "X-User-ID": userInfo.staff_id || "",
+        },
       });
 
-      // แสดงข้อมูล response เพื่อการแก้ไขปัญหา
-      console.log(`[API Service] Response status: ${response.status}`);
-
-      // ตรวจสอบ Content-Type
-      const contentType = response.headers.get("content-type");
-      if (contentType && !contentType.includes("application/json")) {
-        console.error(`[API Service] Non-JSON response type: ${contentType}`);
-        // ดึงข้อมูล response เพื่อดูเนื้อหา
-        const text = await response.text();
-        console.error(
-          `[API Service] Response text (first 100 chars): ${text.substring(
-            0,
-            100
-          )}`
-        );
-        throw new Error(`Received non-JSON response: ${contentType}`);
-      }
-
       if (!response.ok) {
+        // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
+        if (response.status === 401 || response.status === 403) {
+          return {
+            success: false,
+            message: "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ",
+          };
+        }
+
         const errorData = await response.json();
         throw new Error(errorData.message || "มีข้อผิดพลาดเกิดขึ้น");
       }
@@ -200,9 +215,24 @@ export const api = {
   async downloadFile(endpoint) {
     try {
       const fullUrl = `${API_URL}/${endpoint}`;
-      console.log(`Making download request to proxy: ${fullUrl}`);
+      console.log(`Making download request to: ${fullUrl}`);
 
-      const response = await fetch(fullUrl);
+      // ดึงข้อมูลผู้ใช้จาก localStorage
+      let userInfo = {};
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("user");
+        if (user) {
+          userInfo = JSON.parse(user);
+        }
+      }
+
+      const response = await fetch(fullUrl, {
+        headers: {
+          // ส่งข้อมูลคณะของผู้ใช้ใน header
+          "X-User-Faculty": userInfo.staff_faculty || "",
+          "X-User-ID": userInfo.staff_id || "",
+        },
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
