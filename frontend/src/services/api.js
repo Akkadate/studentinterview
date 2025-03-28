@@ -27,24 +27,21 @@ export const api = {
           const storedUser = localStorage.getItem("user");
           if (storedUser) {
             userInfo = JSON.parse(storedUser);
-            console.log("User info from localStorage:", userInfo);
-          } else {
-            console.warn("User marked as logged in but no user data found");
+            console.log("User info:", userInfo);
           }
         } catch (e) {
           console.error("Error parsing user data:", e);
         }
-      } else {
-        console.log("Not logged in");
       }
 
       const headers = {
         "Content-Type": "application/json",
       };
 
-      if (userInfo && userInfo.staff_faculty) {
-        headers["X-User-Faculty"] = userInfo.staff_faculty;
+      if (userInfo && userInfo.staff_id) {
+        headers["X-User-ID"] = userInfo.staff_id;
       }
+
       if (userInfo && userInfo.staff_id) {
         headers["X-User-ID"] = userInfo.staff_id;
       }
@@ -55,6 +52,8 @@ export const api = {
         method: "GET",
         headers: headers,
       });
+
+      // โค้ดส่วนที่เหลือ...
     } catch (error) {
       console.error(`GET Error (${endpoint}):`, error);
       throw error;

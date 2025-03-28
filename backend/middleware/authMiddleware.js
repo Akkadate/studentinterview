@@ -7,28 +7,26 @@ const db = require("../config/db");
  * @param {Object} res - Express response object
  * @param {Function} next - Express next middleware function
  */
+// backend/middleware/authMiddleware.js
+// backend/middleware/authMiddleware.js
 const checkAuth = async (req, res, next) => {
   try {
-    // อ่านข้อมูลผู้ใช้จาก header
-    const userFaculty = req.headers["x-user-faculty"];
     const userId = req.headers["x-user-id"];
 
-    // ถ้าไม่มี header ที่จำเป็น
-    if (!userFaculty || !userId) {
+    if (!userId) {
       return res.status(401).json({
         success: false,
         message: "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ",
       });
     }
 
-    // ตรวจสอบว่าผู้ใช้มีอยู่จริงหรือไม่
-    const interviewerResult = await db.query(
-      "SELECT * FROM interviewer WHERE staff_id = $1",
+    // ดึงข้อมูลผู้ใช้จากฐานข้อมูล
+    const userResult = await db.query(
+      "SELECT staff_id, staff_faculty FROM interviewer WHERE staff_id = $1",
       [userId]
     );
 
-    // ถ้าไม่พบข้อมูลผู้สัมภาษณ์
-    if (interviewerResult.rows.length === 0) {
+    if (userResult.rows.length === 0) {
       return res.status(401).json({
         success: false,
         message: "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ",
@@ -38,10 +36,9 @@ const checkAuth = async (req, res, next) => {
     // เก็บข้อมูลผู้ใช้ใน request object
     req.user = {
       id: userId,
-      faculty: userFaculty,
+      faculty: userResult.rows[0].staff_faculty,
     };
 
-    // ดำเนินการต่อไปยัง middleware หรือ route handler ถัดไป
     next();
   } catch (error) {
     console.error("Auth middleware error:", error);
@@ -51,7 +48,6 @@ const checkAuth = async (req, res, next) => {
     });
   }
 };
-
 /**
  * ตรวจสอบว่าผู้ใช้มีสิทธิ์ในการเข้าถึงข้อมูลของนักศึกษาคณะนั้นหรือไม่
  * @param {Object} req - Express request object
