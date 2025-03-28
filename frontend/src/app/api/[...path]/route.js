@@ -1,269 +1,410 @@
-// src/app/api/[...path]/route.js
-// แก้ไขการกำหนด BACKEND_API_URL ให้ชัดเจน (ระบุโปรโตคอลและพอร์ต)
-const BACKEND_API_URL = "http://interview.devapp.cc:5003";
+// frontend/src/services/api.js
 
-// แสดงค่า URL ที่ใช้ (ใช้สำหรับการแก้ไขปัญหา)
-console.log("Backend API URL configured as:", BACKEND_API_URL);
+// ใช้ API Proxy ภายในเว็บแอพตัวเองแทนการเรียก backend โดยตรง
+// ไม่ต้องระบุ protocol และ domain เพราะเรียกใน origin เดียวกัน
+const API_URL = "/api";
 
-export async function GET(request, { params }) {
-  try {
-    const path = params.path.join("/");
-    console.log(`Proxying GET request to: ${BACKEND_API_URL}/api/${path}`); // เพิ่ม '/api'
-
-    const response = await fetch(`${BACKEND_API_URL}/api/${path}`, {
-      // เพิ่ม '/api'
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    // แสดงข้อมูล Response เพื่อการแก้ไขปัญหา
-    console.log(`[API Proxy] Response status: ${response.status}`);
-    console.log(
-      `[API Proxy] Response headers:`,
-      Object.fromEntries(response.headers)
-    );
-
-    // ตรวจสอบการตอบกลับที่ไม่ใช่ JSON (เช่น HTML)
-    const contentType = response.headers.get("content-type");
-    if (contentType && !contentType.includes("application/json")) {
-      console.error(`Received non-JSON response: ${contentType}`);
-
-      // อ่าน response body เพื่อตรวจสอบเนื้อหา
-      const textResponse = await response.text();
-      console.error(
-        `[API Proxy] Response body (first 200 chars):`,
-        textResponse.substring(0, 200)
-      );
-
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: `Received non-JSON response from backend (${contentType})`,
-          status: response.status,
-        }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    if (!response.ok) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: `Error from backend: ${response.statusText}`,
-        }),
-        {
-          status: response.status,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const data = await response.json();
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("API Proxy Error:", error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: error.message || "มีข้อผิดพลาดเกิดขึ้นที่ API Proxy",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
+// ตรวจสอบว่าไม่มีการใช้ URL เต็มในการเรียก API
+if (API_URL.includes("://")) {
+  console.error(
+    "[API Service] WARNING: API_URL should not contain protocol and domain. Use relative path instead."
+  );
 }
 
-export async function POST(request, { params }) {
-  try {
-    const path = params.path.join("/");
-    const body = await request.json();
+console.log("[API Service] Using API URL:", API_URL);
 
-    console.log(`Proxying POST request to: ${BACKEND_API_URL}/api/${path}`);
+/**
+ * พื้นฐานบริการเรียก API
+ */
+export const api = {
+  /**
+   * GET request
+   * @param {string} endpoint - API endpoint
+   * @returns {Promise} - response data
+   */
+  async get(endpoint) {
+    try {
+      // ตัด / ข้างหน้าออก (ถ้ามี) เพื่อป้องกันการซ้ำซ้อน
+      const cleanEndpoint = endpoint.replace(/^\//, "");
+      const fullUrl = `${API_URL}/${cleanEndpoint}`;
+      console.log(`[API Service] Making GET request to: ${fullUrl}`);
 
-    const response = await fetch(`${BACKEND_API_URL}/api/${path}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    // แสดงข้อมูล Response เพื่อการแก้ไขปัญหา
-    console.log(`[API Proxy] Response status: ${response.status}`);
-    console.log(
-      `[API Proxy] Response headers:`,
-      Object.fromEntries(response.headers)
-    );
-
-    if (!response.ok) {
-      // อ่าน response body เพื่อตรวจสอบเนื้อหา
-      const textResponse = await response.text();
-      console.error(
-        `[API Proxy] Response body (first 200 chars):`,
-        textResponse.substring(0, 200)
-      );
-
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: `Error from backend: ${response.statusText}`,
-        }),
-        {
-          status: response.status,
-          headers: { "Content-Type": "application/json" },
+      // ดึงข้อมูลผู้ใช้จาก localStorage
+      let userInfo = {};
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("user");
+        if (user) {
+          try {
+            userInfo = JSON.parse(user);
+          } catch (e) {
+            console.error(
+              "[API Service] Error parsing user data from localStorage:",
+              e
+            );
+          }
         }
-      );
-    }
-
-    const data = await response.json();
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("API Proxy Error:", error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: error.message || "มีข้อผิดพลาดเกิดขึ้นที่ API Proxy",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
       }
-    );
-  }
-}
 
-export async function PUT(request, { params }) {
-  try {
-    const path = params.path.join("/");
-    const body = await request.json();
+      const response = await fetch(fullUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          // ส่งข้อมูลคณะของผู้ใช้ใน header เพื่อใช้ในการกรองข้อมูล
+          "X-User-Faculty": userInfo.staff_faculty || "",
+          "X-User-ID": userInfo.staff_id || "",
+        },
+      });
 
-    console.log(`Proxying PUT request to: ${BACKEND_API_URL}/api/${path}`);
-
-    const response = await fetch(`${BACKEND_API_URL}/api/${path}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    // แสดงข้อมูล Response เพื่อการแก้ไขปัญหา
-    console.log(`[API Proxy] Response status: ${response.status}`);
-    console.log(
-      `[API Proxy] Response headers:`,
-      Object.fromEntries(response.headers)
-    );
-
-    if (!response.ok) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: `Error from backend: ${response.statusText}`,
-        }),
-        {
-          status: response.status,
-          headers: { "Content-Type": "application/json" },
+      // ตรวจสอบสถานะ response
+      if (!response.ok) {
+        // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
+        if (response.status === 401 || response.status === 403) {
+          return {
+            success: false,
+            message: "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ",
+          };
         }
-      );
-    }
 
-    const data = await response.json();
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("API Proxy Error:", error);
-
-    // อ่าน response body เพื่อตรวจสอบเนื้อหา
-    const textResponse = await response.text();
-    console.error(
-      `[API Proxy] Response body (first 200 chars):`,
-      textResponse.substring(0, 200)
-    );
-
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: error.message || "มีข้อผิดพลาดเกิดขึ้นที่ API Proxy",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
-}
-
-export async function DELETE(request, { params }) {
-  try {
-    const path = params.path.join("/");
-    console.log(`Proxying DELETE request to: ${BACKEND_API_URL}/api/${path}`);
-
-    const response = await fetch(`${BACKEND_API_URL}/api/${path}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    // แสดงข้อมูล Response เพื่อการแก้ไขปัญหา
-    console.log(`[API Proxy] Response status: ${response.status}`);
-    console.log(
-      `[API Proxy] Response headers:`,
-      Object.fromEntries(response.headers)
-    );
-
-    if (!response.ok) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: `Error from backend: ${response.statusText}`,
-        }),
-        {
-          status: response.status,
-          headers: { "Content-Type": "application/json" },
+        // พยายามอ่านข้อความ error จาก JSON
+        try {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message ||
+              `Error ${response.status}: ${response.statusText}`
+          );
+        } catch (jsonError) {
+          // ถ้าไม่สามารถอ่าน JSON ได้ ใช้ข้อความ error จาก response
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
-      );
-    }
-
-    const data = await response.json();
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("API Proxy Error:", error);
-
-    // อ่าน response body เพื่อตรวจสอบเนื้อหา
-    const textResponse = await response.text();
-    console.error(
-      `[API Proxy] Response body (first 200 chars):`,
-      textResponse.substring(0, 200)
-    );
-
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: error.message || "มีข้อผิดพลาดเกิดขึ้นที่ API Proxy",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
       }
-    );
-  }
-}
+
+      // ตรวจสอบ Content-Type
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error(`[API Service] Non-JSON response type: ${contentType}`);
+        // ดึงข้อมูล response เพื่อดูเนื้อหา
+        const text = await response.text();
+        console.error(
+          `[API Service] Response text (first 100 chars): ${text.substring(
+            0,
+            100
+          )}`
+        );
+        throw new Error(`Received non-JSON response: ${contentType}`);
+      }
+
+      // อ่านข้อมูล JSON
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(`[API Service] GET Error (${endpoint}):`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * POST request
+   * @param {string} endpoint - API endpoint
+   * @param {object} data - request body data
+   * @returns {Promise} - response data
+   */
+  async post(endpoint, data) {
+    try {
+      // ตัด / ข้างหน้าออก (ถ้ามี) เพื่อป้องกันการซ้ำซ้อน
+      const cleanEndpoint = endpoint.replace(/^\//, "");
+      const fullUrl = `${API_URL}/${cleanEndpoint}`;
+      console.log(`[API Service] Making POST request to: ${fullUrl}`);
+
+      // ดึงข้อมูลผู้ใช้จาก localStorage
+      let userInfo = {};
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("user");
+        if (user) {
+          try {
+            userInfo = JSON.parse(user);
+          } catch (e) {
+            console.error(
+              "[API Service] Error parsing user data from localStorage:",
+              e
+            );
+          }
+        }
+      }
+
+      const response = await fetch(fullUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // ส่งข้อมูลคณะของผู้ใช้ใน header
+          "X-User-Faculty": userInfo.staff_faculty || "",
+          "X-User-ID": userInfo.staff_id || "",
+        },
+        body: JSON.stringify(data),
+      });
+
+      // ตรวจสอบสถานะ response
+      if (!response.ok) {
+        // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
+        if (response.status === 401 || response.status === 403) {
+          return {
+            success: false,
+            message: "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ",
+          };
+        }
+
+        // พยายามอ่านข้อความ error จาก JSON
+        try {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message ||
+              `Error ${response.status}: ${response.statusText}`
+          );
+        } catch (jsonError) {
+          // ถ้าไม่สามารถอ่าน JSON ได้ ใช้ข้อความ error จาก response
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+      }
+
+      // ตรวจสอบ Content-Type
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error(`[API Service] Non-JSON response type: ${contentType}`);
+        // ดึงข้อมูล response เพื่อดูเนื้อหา
+        const text = await response.text();
+        console.error(
+          `[API Service] Response text (first 100 chars): ${text.substring(
+            0,
+            100
+          )}`
+        );
+        throw new Error(`Received non-JSON response: ${contentType}`);
+      }
+
+      // อ่านข้อมูล JSON
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(`[API Service] POST Error (${endpoint}):`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * PUT request
+   * @param {string} endpoint - API endpoint
+   * @param {object} data - request body data
+   * @returns {Promise} - response data
+   */
+  async put(endpoint, data) {
+    try {
+      // ตัด / ข้างหน้าออก (ถ้ามี) เพื่อป้องกันการซ้ำซ้อน
+      const cleanEndpoint = endpoint.replace(/^\//, "");
+      const fullUrl = `${API_URL}/${cleanEndpoint}`;
+      console.log(`[API Service] Making PUT request to: ${fullUrl}`);
+
+      // ดึงข้อมูลผู้ใช้จาก localStorage
+      let userInfo = {};
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("user");
+        if (user) {
+          try {
+            userInfo = JSON.parse(user);
+          } catch (e) {
+            console.error(
+              "[API Service] Error parsing user data from localStorage:",
+              e
+            );
+          }
+        }
+      }
+
+      const response = await fetch(fullUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          // ส่งข้อมูลคณะของผู้ใช้ใน header
+          "X-User-Faculty": userInfo.staff_faculty || "",
+          "X-User-ID": userInfo.staff_id || "",
+        },
+        body: JSON.stringify(data),
+      });
+
+      // ตรวจสอบสถานะ response
+      if (!response.ok) {
+        // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
+        if (response.status === 401 || response.status === 403) {
+          return {
+            success: false,
+            message: "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ",
+          };
+        }
+
+        // พยายามอ่านข้อความ error จาก JSON
+        try {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message ||
+              `Error ${response.status}: ${response.statusText}`
+          );
+        } catch (jsonError) {
+          // ถ้าไม่สามารถอ่าน JSON ได้ ใช้ข้อความ error จาก response
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+      }
+
+      // ตรวจสอบ Content-Type
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error(`[API Service] Non-JSON response type: ${contentType}`);
+        // ดึงข้อมูล response เพื่อดูเนื้อหา
+        const text = await response.text();
+        console.error(
+          `[API Service] Response text (first 100 chars): ${text.substring(
+            0,
+            100
+          )}`
+        );
+        throw new Error(`Received non-JSON response: ${contentType}`);
+      }
+
+      // อ่านข้อมูล JSON
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(`[API Service] PUT Error (${endpoint}):`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * DELETE request
+   * @param {string} endpoint - API endpoint
+   * @returns {Promise} - response data
+   */
+  async delete(endpoint) {
+    try {
+      // ตัด / ข้างหน้าออก (ถ้ามี) เพื่อป้องกันการซ้ำซ้อน
+      const cleanEndpoint = endpoint.replace(/^\//, "");
+      const fullUrl = `${API_URL}/${cleanEndpoint}`;
+      console.log(`[API Service] Making DELETE request to: ${fullUrl}`);
+
+      // ดึงข้อมูลผู้ใช้จาก localStorage
+      let userInfo = {};
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("user");
+        if (user) {
+          try {
+            userInfo = JSON.parse(user);
+          } catch (e) {
+            console.error(
+              "[API Service] Error parsing user data from localStorage:",
+              e
+            );
+          }
+        }
+      }
+
+      const response = await fetch(fullUrl, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          // ส่งข้อมูลคณะของผู้ใช้ใน header
+          "X-User-Faculty": userInfo.staff_faculty || "",
+          "X-User-ID": userInfo.staff_id || "",
+        },
+      });
+
+      // ตรวจสอบสถานะ response
+      if (!response.ok) {
+        // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
+        if (response.status === 401 || response.status === 403) {
+          return {
+            success: false,
+            message: "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ",
+          };
+        }
+
+        // พยายามอ่านข้อความ error จาก JSON
+        try {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message ||
+              `Error ${response.status}: ${response.statusText}`
+          );
+        } catch (jsonError) {
+          // ถ้าไม่สามารถอ่าน JSON ได้ ใช้ข้อความ error จาก response
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+      }
+
+      // ตรวจสอบ Content-Type
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error(`[API Service] Non-JSON response type: ${contentType}`);
+        // ดึงข้อมูล response เพื่อดูเนื้อหา
+        const text = await response.text();
+        console.error(
+          `[API Service] Response text (first 100 chars): ${text.substring(
+            0,
+            100
+          )}`
+        );
+        throw new Error(`Received non-JSON response: ${contentType}`);
+      }
+
+      // อ่านข้อมูล JSON
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(`[API Service] DELETE Error (${endpoint}):`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * File download request
+   * @param {string} endpoint - API endpoint
+   * @returns {Promise} - Blob for download
+   */
+  async downloadFile(endpoint) {
+    try {
+      // ตัด / ข้างหน้าออก (ถ้ามี) เพื่อป้องกันการซ้ำซ้อน
+      const cleanEndpoint = endpoint.replace(/^\//, "");
+      const fullUrl = `${API_URL}/${cleanEndpoint}`;
+      console.log(`[API Service] Making download request to: ${fullUrl}`);
+
+      // ดึงข้อมูลผู้ใช้จาก localStorage
+      let userInfo = {};
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("user");
+        if (user) {
+          try {
+            userInfo = JSON.parse(user);
+          } catch (e) {
+            console.error(
+              "[API Service] Error parsing user data from localStorage:",
+              e
+            );
+          }
+        }
+      }
+
+      const response = await fetch(fullUrl, {
+        headers: {
+          // ส่งข้อมูลคณะของผู้ใช้ใน header
+          "X-User-Faculty": userInfo.staff_faculty || "",
+          "X-User-ID": userInfo.staff_id || "",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.blob();
+    } catch (error) {
+      console.error(`[API Service] Download Error (${endpoint}):`, error);
+      throw error;
+    }
+  },
+};
