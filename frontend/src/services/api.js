@@ -2,6 +2,7 @@
 
 // ใช้ API Proxy ภายในเว็บแอพตัวเองแทนการเรียก backend โดยตรง
 const API_URL = "/api";
+console.log("[API Service] Using API URL:", API_URL);
 
 /**
  * พื้นฐานบริการเรียก API
@@ -35,6 +36,21 @@ export const api = {
           "X-User-ID": userInfo.staff_id || "",
         },
       });
+
+      // ตรวจสอบ Content-Type
+      const contentType = response.headers.get("content-type");
+      if (contentType && !contentType.includes("application/json")) {
+        console.error(`[API Service] Non-JSON response type: ${contentType}`);
+        // ดึงข้อมูล response เพื่อดูเนื้อหา
+        const text = await response.text();
+        console.error(
+          `[API Service] Response text (first 100 chars): ${text.substring(
+            0,
+            100
+          )}`
+        );
+        throw new Error(`Received non-JSON response: ${contentType}`);
+      }
 
       if (!response.ok) {
         // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
@@ -87,6 +103,21 @@ export const api = {
         body: JSON.stringify(data),
       });
 
+      // ตรวจสอบ Content-Type
+      const contentType = response.headers.get("content-type");
+      if (contentType && !contentType.includes("application/json")) {
+        console.error(`[API Service] Non-JSON response type: ${contentType}`);
+        // ดึงข้อมูล response เพื่อดูเนื้อหา
+        const text = await response.text();
+        console.error(
+          `[API Service] Response text (first 100 chars): ${text.substring(
+            0,
+            100
+          )}`
+        );
+        throw new Error(`Received non-JSON response: ${contentType}`);
+      }
+
       if (!response.ok) {
         // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
         if (response.status === 401 || response.status === 403) {
@@ -138,6 +169,21 @@ export const api = {
         body: JSON.stringify(data),
       });
 
+      // ตรวจสอบ Content-Type
+      const contentType = response.headers.get("content-type");
+      if (contentType && !contentType.includes("application/json")) {
+        console.error(`[API Service] Non-JSON response type: ${contentType}`);
+        // ดึงข้อมูล response เพื่อดูเนื้อหา
+        const text = await response.text();
+        console.error(
+          `[API Service] Response text (first 100 chars): ${text.substring(
+            0,
+            100
+          )}`
+        );
+        throw new Error(`Received non-JSON response: ${contentType}`);
+      }
+
       if (!response.ok) {
         // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
         if (response.status === 401 || response.status === 403) {
@@ -186,6 +232,21 @@ export const api = {
           "X-User-ID": userInfo.staff_id || "",
         },
       });
+
+      // ตรวจสอบ Content-Type
+      const contentType = response.headers.get("content-type");
+      if (contentType && !contentType.includes("application/json")) {
+        console.error(`[API Service] Non-JSON response type: ${contentType}`);
+        // ดึงข้อมูล response เพื่อดูเนื้อหา
+        const text = await response.text();
+        console.error(
+          `[API Service] Response text (first 100 chars): ${text.substring(
+            0,
+            100
+          )}`
+        );
+        throw new Error(`Received non-JSON response: ${contentType}`);
+      }
 
       if (!response.ok) {
         // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
