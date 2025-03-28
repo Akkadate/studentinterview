@@ -117,7 +117,7 @@ export default function LoginPage() {
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>
             หากไม่ทราบรหัสผู้สัมภาษณ์หรือมีปัญหาในการเข้าสู่ระบบ
-            กรุณาติดต่อผู้ดูแลระบบ
+            กรุณาติดต่อสำนักเทคโนโลยีสารสนเทศ
           </p>
         </div>
       </div>

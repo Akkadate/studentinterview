@@ -303,16 +303,26 @@ export const api = {
       if (typeof window !== "undefined") {
         const user = localStorage.getItem("user");
         if (user) {
-          userInfo = JSON.parse(user);
+          try {
+            userInfo = JSON.parse(user);
+          } catch (e) {
+            console.error("Error parsing user data:", e);
+          }
         }
       }
 
+      // สร้าง headers ที่จะไม่มีปัญหากับตัวอักษรไทย
+      const headers = {};
+
+      // เพิ่มเฉพาะ ID ซึ่งไม่มีตัวอักษรไทย
+      if (userInfo.staff_id) {
+        headers["X-User-ID"] = userInfo.staff_id;
+      }
+
+      // ไม่ส่ง X-User-Faculty ที่มีตัวอักษรไทย
+
       const response = await fetch(fullUrl, {
-        headers: {
-          // ส่งข้อมูลคณะของผู้ใช้ใน header
-          "X-User-Faculty": userInfo.staff_faculty || "",
-          "X-User-ID": userInfo.staff_id || "",
-        },
+        headers: headers,
       });
 
       if (!response.ok) {
