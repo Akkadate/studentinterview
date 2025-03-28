@@ -6,6 +6,7 @@
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 243, 244, 246;
+  --font-family-base: "Prompt", "Inter", sans-serif !important;
 }
 
 /* เพิ่มคุณสมบัติสำหรับฟอนต์ไทย */
@@ -44,4 +45,107 @@
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
+}
+
+/* Reset ฟอนต์ทั้งหมดให้เป็น Prompt */
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video,
+input,
+textarea,
+select,
+button {
+  font-family: "Prompt", "Inter", sans-serif !important;
+}
+
+/* เพิ่มใน globals.css */
+body[class] {
+  font-family: "Prompt", "Inter", sans-serif !important;
+}
+
+[class*="font-"] {
+  font-family: "Prompt", "Inter", sans-serif !important;
+}
+
+.font-sans,
+[class*="font-sans"] {
+  font-family: "Prompt", "Inter", sans-serif !important;
 }

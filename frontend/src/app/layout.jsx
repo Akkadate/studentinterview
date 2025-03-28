@@ -29,6 +29,39 @@ export default function RootLayout({ children }) {
           name="description"
           content="ระบบสัมภาษณ์นักศึกษาสำหรับเก็บข้อมูลในการดูแล"
         />
+        {/* โหลดฟอนต์ Prompt โดยตรง */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;700&display=swap"
+          rel="stylesheet"
+        />
+
+        {/* บังคับใช้ฟอนต์ Prompt ด้วย inline style */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+          * {
+            font-family: 'Prompt', 'Inter', sans-serif !important;
+          }
+          
+          /* ปรับแต่ง line-height สำหรับภาษาไทย */
+          p, div, span, li, a, button, input, textarea, select {
+            line-height: 1.7 !important;
+          }
+          
+          /* ปรับแต่งหัวข้อภาษาไทย */
+          h1, h2, h3, h4, h5, h6 {
+            line-height: 1.4 !important;
+            letter-spacing: -0.01em !important;
+          }
+        `,
+          }}
+        />
       </head>
       <body
         className={`${prompt.className} ${inter.className}`}
