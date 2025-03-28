@@ -20,7 +20,7 @@ export async function POST(request) {
     // แก้ไข URL ของ backend
     const backendUrl =
       process.env.NEXT_PUBLIC_API_URL || "http://interview.devapp.cc:5003";
-    const response = await fetch(`${backendUrl}/interviewers/${staff_id}`, {
+    const response = await fetch(`${backendUrl}/api/interviewers/${staff_id}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
