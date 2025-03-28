@@ -78,4 +78,12 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
+// ใน backend/server.js
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    message: "API is running",
+  });
+});
+
 module.exports = app;
