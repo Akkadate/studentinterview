@@ -3,13 +3,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useAuth } from "../../contexts/AuthContext"; // เพิ่มการนำเข้า useAuth
 
 export default function LoginPage() {
   const [staffId, setStaffId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const { setIsLoggedIn, setUser } = useAuth(); // ดึงฟังก์ชันอัปเดตสถานะจาก AuthContext
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -49,11 +50,14 @@ export default function LoginPage() {
         localStorage.setItem("user", JSON.stringify(data.data));
         localStorage.setItem("isLoggedIn", "true");
 
-        // เพิ่มการตรวจสอบ
-      console.log("ไปที่ Navigating to interview page...");
+        // อัปเดต AuthContext โดยตรง
+        setUser(data.data);
+        setIsLoggedIn(true);
 
-        // นำทางไปยังหน้าหลัก
-        router.push("/interview");
+        console.log("Navigating to interview page...");
+        
+        // ใช้การนำทางแบบตรงแทน router.push
+        window.location.href = "/interview";
       } else {
         setError(data.message || "รหัสผู้สัมภาษณ์ไม่ถูกต้อง");
       }

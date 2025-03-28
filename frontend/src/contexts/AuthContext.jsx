@@ -13,8 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // โหลดข้อมูลผู้ใช้จาก localStorage เมื่อเริ่มต้น
-  // frontend/src/contexts/AuthContext.jsx
+
 // โค้ดใน useEffect
 useEffect(() => {
   const checkLoginStatus = () => {
@@ -121,6 +120,8 @@ useEffect(() => {
         login,
         logout,
         hasAccessToFaculty,
+        setUser,          // เพิ่มการเปิดเผย setUser
+        setIsLoggedIn     // เพิ่มการเปิดเผย setIsLoggedIn
       }}
     >
       {children}
