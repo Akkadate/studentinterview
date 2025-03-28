@@ -19,53 +19,40 @@ export const api = {
       console.log(`Making GET request to: ${fullUrl}`);
 
       // ดึงข้อมูลผู้ใช้จาก localStorage
-      let userInfo = {};
+      let userInfo = null;
       if (typeof window !== "undefined") {
         const user = localStorage.getItem("user");
         if (user) {
-          userInfo = JSON.parse(user);
+          try {
+            userInfo = JSON.parse(user);
+            console.log("User info from localStorage:", userInfo); // เพิ่ม log เพื่อตรวจสอบข้อมูล
+          } catch (e) {
+            console.error("Error parsing user data:", e);
+          }
+        } else {
+          console.warn("No user data found in localStorage");
         }
       }
+
+      // สร้าง headers ที่จำเป็น
+      const headers = {
+        "Content-Type": "application/json",
+      };
+
+      // เพิ่ม headers เฉพาะเมื่อมีข้อมูลผู้ใช้
+      if (userInfo && userInfo.staff_faculty) {
+        headers["X-User-Faculty"] = userInfo.staff_faculty;
+      }
+      if (userInfo && userInfo.staff_id) {
+        headers["X-User-ID"] = userInfo.staff_id;
+      }
+
+      console.log("Request headers:", headers); // เพิ่ม log เพื่อตรวจสอบ headers
 
       const response = await fetch(fullUrl, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          // ส่งข้อมูลคณะของผู้ใช้ใน header เพื่อใช้ในการกรองข้อมูล
-          "X-User-Faculty": userInfo.staff_faculty || "",
-          "X-User-ID": userInfo.staff_id || "",
-        },
+        headers: headers,
       });
-
-      // ตรวจสอบ Content-Type
-      const contentType = response.headers.get("content-type");
-      if (contentType && !contentType.includes("application/json")) {
-        console.error(`[API Service] Non-JSON response type: ${contentType}`);
-        // ดึงข้อมูล response เพื่อดูเนื้อหา
-        const text = await response.text();
-        console.error(
-          `[API Service] Response text (first 100 chars): ${text.substring(
-            0,
-            100
-          )}`
-        );
-        throw new Error(`Received non-JSON response: ${contentType}`);
-      }
-
-      if (!response.ok) {
-        // ถ้าเป็น 401 หรือ 403 ให้แสดงข้อความที่เป็นมิตรกับผู้ใช้
-        if (response.status === 401 || response.status === 403) {
-          return {
-            success: false,
-            message: "ข้อมูลถูกจำกัดการเข้าถึงตามสิทธิ์ที่ได้รับ",
-          };
-        }
-
-        const errorData = await response.json();
-        throw new Error(errorData.message || "มีข้อผิดพลาดเกิดขึ้น");
-      }
-
-      return await response.json();
     } catch (error) {
       console.error(`GET Error (${endpoint}):`, error);
       throw error;
