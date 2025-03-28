@@ -11,8 +11,10 @@ const db = require("../config/db");
 // backend/middleware/authMiddleware.js
 const checkAuth = async (req, res, next) => {
   try {
+    // อ่านข้อมูลผู้ใช้จาก header
     const userId = req.headers["x-user-id"];
 
+    // ถ้าไม่มี header ที่จำเป็น
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -38,6 +40,9 @@ const checkAuth = async (req, res, next) => {
       id: userId,
       faculty: userResult.rows[0].staff_faculty,
     };
+
+    // เพิ่ม log เพื่อตรวจสอบว่าข้อมูลถูกต้อง
+    console.log("User authenticated:", req.user);
 
     next();
   } catch (error) {

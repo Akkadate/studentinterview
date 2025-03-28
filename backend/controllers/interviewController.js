@@ -573,12 +573,36 @@ const deleteInterview = async (req, res) => {
 // Export all interviews to Excel
 const exportInterviewsToExcel = async (req, res) => {
   try {
+    // ดึงข้อมูลผู้ใช้จาก ID
+    const userId = req.headers["x-user-id"];
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "กรุณาระบุรหัสผู้สัมภาษณ์",
+      });
+    }
+
+    // ดึงข้อมูลผู้ใช้จากฐานข้อมูล
+    const userResult = await db.query(
+      "SELECT staff_id, staff_faculty FROM interviewer WHERE staff_id = $1",
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: "ไม่พบข้อมูลผู้สัมภาษณ์",
+      });
+    }
+
+    const userFaculty = userResult.rows[0].staff_faculty;
+
     // กรองตามคณะของผู้ใช้ ยกเว้นผู้บริหาร
     const facultyFilter =
-      req.user.faculty === "ผู้บริหาร" ? "" : "WHERE s.faculty = $1";
+      userFaculty === "ผู้บริหาร" ? "" : "WHERE s.faculty = $1";
 
-    const queryParams =
-      req.user.faculty === "ผู้บริหาร" ? [] : [req.user.faculty];
+    const queryParams = userFaculty === "ผู้บริหาร" ? [] : [userFaculty];
 
     // Get all interviews with student and interviewer details
     const query = `
@@ -620,7 +644,7 @@ const exportInterviewsToExcel = async (req, res) => {
       "SELECT ia.interview_id, ia.question_id, ia.answer_text FROM interview_answer ia";
 
     // ถ้าไม่ใช่ผู้บริหาร กรองเฉพาะคำตอบของนักศึกษาในคณะของผู้ใช้
-    if (req.user.faculty !== "ผู้บริหาร") {
+    if (userFaculty !== "ผู้บริหาร") {
       answersQuery = `
         SELECT 
           ia.interview_id, 
