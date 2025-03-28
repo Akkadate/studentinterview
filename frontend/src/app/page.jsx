@@ -29,9 +29,6 @@ export default function Home() {
       }
     };
 
-    // เรียกฟังก์ชันทดสอบ
-    testApiConnection();
-
     const testBackendConnectivity = async () => {
       try {
         console.log("Testing backend connectivity...");
@@ -59,9 +56,6 @@ export default function Home() {
         console.error("Backend connectivity test error:", error);
       }
     };
-
-    // เรียกฟังก์ชันทดสอบการเชื่อมต่อ
-    testBackendConnectivity();
   }, []);
 
   // โค้ดเดิมของคอมโพเนนต์...
