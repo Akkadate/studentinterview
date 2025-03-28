@@ -54,10 +54,12 @@ export default function LoginPage() {
         setUser(data.data);
         setIsLoggedIn(true);
 
-        console.log("Navigating to interview page...");
+      // เปลี่ยนจากไปหน้าสัมภาษณ์เป็นไปหน้าแรก
+  console.log("Navigating to home page...");
+  window.location.href = "/"; // ไปที่หน้าแรก
         
         // ใช้การนำทางแบบตรงแทน router.push
-        window.location.href = "/interview";
+        //window.location.href = "/interview";
       } else {
         setError(data.message || "รหัสผู้สัมภาษณ์ไม่ถูกต้อง");
       }
