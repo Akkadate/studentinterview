@@ -23,14 +23,15 @@ export default function LoginPage() {
       setLoading(true);
       setError("");
 
-      // เรียก API สำหรับการล็อกอิน
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
+      // เรียก API backend โดยตรงผ่าน Nginx proxy
+      const response = await fetch(`/api/interviewers/${staffId}`, {
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ staff_id: staffId }),
       });
+
+      console.log("Response status:", response.status);
 
       // ตรวจสอบว่าเป็น JSON response หรือไม่
       const contentType = response.headers.get("content-type");
