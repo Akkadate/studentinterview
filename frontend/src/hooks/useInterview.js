@@ -14,6 +14,7 @@ export const useInterview = () => {
 
   const {
     interviewer,
+    setInterviewer,
     student,
     answers,
     questions,
@@ -28,10 +29,31 @@ export const useInterview = () => {
    * @returns {Promise<boolean>} สถานะการบันทึก
    */
   const submitInterview = async () => {
-    // ตรวจสอบข้อมูลจำเป็น
-    if (!interviewer) {
-      showNotification("กรุณาเลือกผู้สัมภาษณ์", "error");
-      return false;
+    // ตรวจสอบผู้สัมภาษณ์ - ถ้าไม่มี ให้ดึงจาก localStorage
+    let currentInterviewer = interviewer;
+    if (!currentInterviewer) {
+      try {
+        const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+        if (isLoggedIn) {
+          const storedUser = localStorage.getItem("user");
+          if (storedUser) {
+            const userInfo = JSON.parse(storedUser);
+            setInterviewer(userInfo); // ตั้งค่าผู้สัมภาษณ์
+            currentInterviewer = userInfo; // ใช้ในการทำงานต่อไป
+            console.log("ใช้ข้อมูลผู้สัมภาษณ์จาก localStorage:", userInfo);
+          } else {
+            showNotification("กรุณาเลือกผู้สัมภาษณ์", "error");
+            return false;
+          }
+        } else {
+          showNotification("กรุณาเลือกผู้สัมภาษณ์", "error");
+          return false;
+        }
+      } catch (e) {
+        console.error("Error parsing user data:", e);
+        showNotification("กรุณาเลือกผู้สัมภาษณ์", "error");
+        return false;
+      }
     }
 
     if (!student) {
@@ -64,7 +86,7 @@ export const useInterview = () => {
       // สร้างข้อมูลการสัมภาษณ์
       const interviewData = {
         student_id: student.student_id,
-        interviewer_id: interviewer.staff_id,
+        interviewer_id: currentInterviewer.staff_id,
         answers: answersArray,
       };
 

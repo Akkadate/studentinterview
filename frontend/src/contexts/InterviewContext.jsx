@@ -34,6 +34,25 @@ export const InterviewProvider = ({ children }) => {
     type: "info",
   });
 
+  // เพิ่ม useEffect เพื่อตั้งค่าผู้สัมภาษณ์จาก localStorage ตั้งแต่เริ่มต้น
+  useEffect(() => {
+    // ตรวจสอบสถานะการล็อกอิน
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    
+    if (isLoggedIn) {
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const userInfo = JSON.parse(storedUser);
+          setInterviewer(userInfo);
+          console.log("ตั้งค่าผู้สัมภาษณ์จากข้อมูล login:", userInfo);
+        }
+      } catch (e) {
+        console.error("Error parsing user data from localStorage:", e);
+      }
+    }
+  }, []);
+
   // แก้ไขส่วน useEffect ที่โหลดคำถาม
   useEffect(() => {
     // frontend/src/contexts/InterviewContext.jsx
