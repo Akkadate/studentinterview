@@ -303,6 +303,7 @@ export const api = {
       if (typeof window !== "undefined") {
         const user = localStorage.getItem("user");
         if (user) {
+          userInfo = JSON.parse(user);
           try {
             userInfo = JSON.parse(user);
           } catch (e) {
